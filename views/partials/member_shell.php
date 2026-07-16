@@ -19,7 +19,7 @@ $navBtn = function (bool $active): string {
         <a href="<?= h(url('my')) ?>" style="<?= $navBtn($memberView === 'home') ?>">งานวิจัยของฉัน</a>
         <a href="<?= h(url('my/submit')) ?>" style="<?= $navBtn($memberView === 'submit') ?>">ส่งงานวิจัย</a>
       </nav>
-      <button data-action="cycle-theme" title="สลับโหมดแสดงผล" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:12px;font-weight:600"><span data-theme-glyph>AUTO</span></button>
+      <?= theme_toggle() ?>
       <div style="position:relative">
         <button type="button" data-action="toggle-user-menu" style="display:flex;align-items:center;gap:9px;padding:4px 8px 4px 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);cursor:pointer">
           <span style="text-align:right;line-height:1.2"><span style="display:block;font-size:13px;font-weight:600"><?= h($user['name']) ?></span><span style="display:block;font-size:11px;color:var(--muted)"><?= h($user['role']) ?></span></span>

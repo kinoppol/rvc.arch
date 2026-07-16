@@ -141,6 +141,19 @@ function human_size(?int $bytes): string
     return round($bytes / (1024 ** $i), 1) . ' ' . $units[$i];
 }
 
+/**
+ * Theme-toggle button (system → light → dark). Shows an icon for the current
+ * mode; theme.js swaps the icon and title on click. Default icon = system
+ * (monitor) so there's no text flash before JS runs.
+ */
+function theme_toggle(): string
+{
+    $system = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+    return '<button type="button" data-action="cycle-theme" title="โหมดแสดงผล: ตามระบบ" aria-label="สลับโหมดแสดงผล"'
+        . ' style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center">'
+        . '<span data-theme-glyph style="display:grid;place-items:center">' . $system . '</span></button>';
+}
+
 /** Shorten a Thai string to $len characters with an ellipsis. */
 function excerpt(?string $s, int $len = 90): string
 {

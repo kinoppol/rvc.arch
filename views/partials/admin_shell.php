@@ -46,7 +46,7 @@ $settings = [
       <button data-action="toggle-sidebar" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px">☰</button>
       <div style="font-weight:700;font-size:16px"><?= h($title) ?></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
-        <button data-action="cycle-theme" title="สลับโหมด" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:11.5px;font-weight:600"><span data-theme-glyph>AUTO</span></button>
+        <?= theme_toggle() ?>
         <div style="position:relative;padding-left:6px">
           <button type="button" data-action="toggle-user-menu" style="display:flex;align-items:center;gap:9px;padding:4px 8px 4px 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);cursor:pointer">
             <span data-collapse-hide style="text-align:right;line-height:1.2"><span style="display:block;font-size:13px;font-weight:600"><?= h($user['name']) ?></span><span style="display:block;font-size:11px;color:var(--muted)"><?= h($user['role']) ?></span></span>

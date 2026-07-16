@@ -5,6 +5,15 @@ declare(strict_types=1);
  * Front controller — all requests (except real files) route through here.
  */
 
+// Routing health probe used by install.php to verify mod_rewrite / .htaccess.
+// Handled first so it works even before config exists: if this responds with
+// the token, the request was successfully rewritten to the front controller.
+if (preg_match('#/__rewrite_check/?$#', parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '')) {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'RVC_ROUTING_OK';
+    exit;
+}
+
 session_start();
 
 require __DIR__ . '/app/App.php';

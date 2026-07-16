@@ -120,6 +120,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $locked = is_file($lockPath) && !$summary;
 
+// Best-effort server-side mod_rewrite hint (works when PHP runs as an Apache
+// module). The browser then does the definitive end-to-end probe (see JS below),
+// which also catches AllowOverride / missing-.htaccess cases apache_get_modules
+// can't see — and avoids a fragile server self-request.
+$rewrite = check_rewrite();
+
 /* ---------- tiny view helpers ---------- */
 function e(?string $s): string { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
 $inputStyle = 'width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;background:var(--surface-2);color:var(--text);outline:none';
@@ -159,6 +165,7 @@ $cardStyle  = 'background:var(--surface);border:1px solid var(--border);border-r
         <dt style="color:var(--muted)">งานวิจัย</dt><dd style="margin:0;font-weight:600"><?= (int) $summary['research'] ?> รายการ</dd>
         <dt style="color:var(--muted)">อีเมลผู้ดูแล</dt><dd style="margin:0;font-weight:600"><?= e($summary['admin_email']) ?></dd>
       </dl>
+      <div id="rewrite-status"><?= ($rewrite['ok'] ?? null) === null ? '' : rewrite_banner($rewrite) ?></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a href="<?= e($base) ?>/" style="background:var(--primary);color:#fff;text-decoration:none;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px">ไปที่หน้าเว็บ</a>
         <a href="<?= e($base) ?>/login" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);text-decoration:none;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px">เข้าสู่ระบบผู้ดูแล</a>
@@ -169,6 +176,7 @@ $cardStyle  = 'background:var(--surface);border:1px solid var(--border);border-r
     </div>
 <?php else: ?>
     <!-- ===== form ===== -->
+    <div id="rewrite-status"><?= ($rewrite['ok'] ?? null) === null ? '' : rewrite_banner($rewrite) ?></div>
     <?php if ($locked): ?>
       <div style="font-size:13px;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:12px 14px;line-height:1.6;margin-bottom:18px">
         ⚠ ระบบนี้เคยถูกติดตั้งไปแล้ว การติดตั้งซ้ำจะ <b>ลบข้อมูลเดิมทั้งหมด</b> — ดำเนินการต่อเฉพาะเมื่อต้องการรีเซ็ต
@@ -230,6 +238,20 @@ $cardStyle  = 'background:var(--surface);border:1px solid var(--border);border-r
 <?php endif; ?>
   </div>
 </div>
+<script>
+// Definitive mod_rewrite / .htaccess probe from the browser (no server self-request).
+(function () {
+  var box = document.getElementById('rewrite-status');
+  if (!box) return;
+  var base = <?= json_encode($base, JSON_UNESCAPED_SLASHES) ?>;
+  var OK  = <?= json_encode(rewrite_banner(['ok' => true]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  var BAD = <?= json_encode(rewrite_banner(['ok' => false]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  fetch(base + '/__rewrite_check', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+    .then(function (t) { box.innerHTML = (t.trim() === 'RVC_ROUTING_OK') ? OK : BAD; })
+    .catch(function () { box.innerHTML = BAD; });
+})();
+</script>
 </body>
 </html>
 <?php
@@ -243,6 +265,39 @@ function default_app(): array
         'name' => 'ระบบคลังงานวิจัย', 'org' => 'วิทยาลัยอาชีวศึกษาร้อยเอ็ด',
         'upload_dir' => __DIR__ . '/storage/uploads', 'max_upload_bytes' => 20 * 1024 * 1024,
     ];
+}
+
+/**
+ * Server-side best-effort mod_rewrite hint. Definitive verification is done by
+ * the browser probe on the rendered page.
+ *
+ * @return array{ok:bool|null}  ok = true|false|null (undetermined)
+ */
+function check_rewrite(): array
+{
+    if (function_exists('apache_get_modules')) {
+        return ['ok' => in_array('mod_rewrite', apache_get_modules(), true)];
+    }
+    return ['ok' => null]; // PHP-FPM / CGI — let the browser probe decide
+}
+
+/** HTML banner describing the mod_rewrite / .htaccess check result. */
+function rewrite_banner(array $rw): string
+{
+    if (($rw['ok'] ?? null) === true) {
+        return '<div style="font-size:13px;color:var(--ok);background:var(--ok-soft);border-radius:10px;padding:12px 14px;line-height:1.6;margin-bottom:18px">'
+            . '✓ ตรวจสอบ mod_rewrite / .htaccess: <b>ทำงานปกติ</b> — ลิงก์ต่าง ๆ ในระบบจะเปิดได้ถูกต้อง</div>';
+    }
+    $head = ($rw['ok'] ?? null) === false
+        ? '<b>ตรวจไม่พบว่า mod_rewrite / .htaccess ทำงาน</b> — เมนูและลิงก์ในระบบ (เช่น หน้าเข้าสู่ระบบ) จะขึ้น “Not Found”'
+        : '<b>ไม่สามารถตรวจสอบ mod_rewrite อัตโนมัติได้</b> — โปรดตรวจสอบด้วยตนเองว่าการเปิดลิงก์ในระบบทำงานถูกต้อง';
+    return '<div style="font-size:13px;color:var(--danger);background:var(--danger-soft);border:1px solid var(--danger);border-radius:10px;padding:14px 16px;line-height:1.75;margin-bottom:18px">'
+        . '⚠ ' . $head
+        . '<div style="margin-top:8px;color:var(--text)">วิธีแก้บน Apache:</div>'
+        . '<div style="color:var(--muted)">1) เปิดมอดูล: <code>a2enmod rewrite</code> แล้วรีสตาร์ท <code>systemctl restart apache2</code></div>'
+        . '<div style="color:var(--muted)">2) ตั้งค่าในบล็อก &lt;Directory&gt; ของโฟลเดอร์นี้ให้เป็น <code>AllowOverride All</code></div>'
+        . '<div style="color:var(--muted)">3) ตรวจว่าไฟล์ <code>.htaccess</code> ถูกอัปโหลด/ดีพลอยไปด้วย (ไฟล์ขึ้นต้นด้วยจุดมักถูกซ่อน)</div>'
+        . '</div>';
 }
 
 /**

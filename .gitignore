@@ -1,0 +1,15 @@
+# Local config with credentials
+/config/config.php
+
+# Installer completion marker (written by install.php)
+/config/installed.lock
+
+# Uploaded PDFs (keep the folder + its access guard, ignore actual uploads)
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+!/storage/uploads/.htaccess
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+*.log

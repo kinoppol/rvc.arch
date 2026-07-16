@@ -1,0 +1,23 @@
+# Front-controller routing for the Research Repository app.
+# App lives at http://localhost/rvc.arch/
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /rvc.arch/
+
+    # Serve real files and directories (assets, uploads via PHP, etc.) directly.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Everything else goes through the front controller.
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Block direct web access to app internals.
+<FilesMatch "\.(sql|md)$">
+    Require all denied
+</FilesMatch>
+
+RedirectMatch 403 ^/rvc\.arch/(config|app|sql|views)(/.*)?$
+RedirectMatch 403 ^/rvc\.arch/storage/uploads(/.*)?$

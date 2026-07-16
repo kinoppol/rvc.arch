@@ -1,0 +1,50 @@
+/* ============================================================
+   Design tokens & base styles — ported verbatim from the
+   Claude Design prototype (Research Repository.dc.html).
+   ============================================================ */
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.app-root {
+  --bg:#f3efe9; --surface:#fffdfa; --surface-2:#f8f4ee; --surface-3:#efe9e1;
+  --text:#26212e; --muted:#736c7e; --faint:#a49cae; --border:#e6ded4; --border-2:#efe8df;
+  --primary:#4c2a86; --primary-hover:#5c358f; --primary-fg:#ffffff;
+  --primary-soft:#ece5f7; --primary-text:#4c2a86;
+  --ok:#2f7d5b; --ok-soft:#e2f1e9; --warn:#b57314; --warn-soft:#f7ecda;
+  --danger:#b23b3b; --danger-soft:#f6e3e1; --info:#2f6396; --info-soft:#e2ecf5;
+  --shadow:0 1px 2px rgba(45,25,70,.05), 0 2px 8px rgba(45,25,70,.05);
+  --shadow-lg:0 8px 30px rgba(45,25,70,.14);
+  --c1:#4c2a86; --c2:#2f7d72; --c3:#b06a1a; --c4:#395fa8; --c5:#8a3d7a;
+  font-family:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+  color:var(--text); background:var(--bg); min-height:100vh; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.app-root[data-theme="dark"] {
+  --bg:#161320; --surface:#201b2c; --surface-2:#282234; --surface-3:#322b40;
+  --text:#ece8f2; --muted:#a49bb4; --faint:#786f8a; --border:#332c42; --border-2:#2b2438;
+  --primary:#8b5cf0; --primary-hover:#9d74f4; --primary-fg:#ffffff;
+  --primary-soft:#2b2140; --primary-text:#c9b6f5;
+  --ok:#5cc48f; --ok-soft:#1e3329; --warn:#e0a34d; --warn-soft:#372c18;
+  --danger:#e78585; --danger-soft:#3a2222; --info:#78aae0; --info-soft:#1e2c3c;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.25);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.5);
+  --c1:#a78bfa; --c2:#5cc4b4; --c3:#e0a34d; --c4:#79a2e6; --c5:#d67cc0;
+}
+.app-root svg { display:block; }
+.sc-hidden { display:none !important; }
+.lnk { color:var(--primary-text); text-decoration:none; }
+.lnk:hover { text-decoration:underline; }
+a { color:inherit; }
+::selection { background:var(--primary-soft); }
+.app-root ::-webkit-scrollbar { width:11px; height:11px; }
+.app-root ::-webkit-scrollbar-thumb { background:var(--border); border-radius:6px; border:3px solid var(--bg); }
+input,select,textarea,button { font-family:inherit; }
+
+@keyframes toastIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+@keyframes fade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* card hover used on home/search lists (design used style-hover) */
+.card-hover { transition:transform .12s, box-shadow .12s, border-color .12s; }
+.card-lift:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+.card-outline:hover { border-color:var(--primary); }

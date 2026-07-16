@@ -1,0 +1,3 @@
+# Never serve uploaded files directly — downloads go through index.php (?/download)
+# so access control (public vs. locked) is enforced in PHP.
+Require all denied

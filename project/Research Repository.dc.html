@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  .app-root{
+    --bg:#f3efe9; --surface:#fffdfa; --surface-2:#f8f4ee; --surface-3:#efe9e1;
+    --text:#26212e; --muted:#736c7e; --faint:#a49cae; --border:#e6ded4; --border-2:#efe8df;
+    --primary:#4c2a86; --primary-hover:#5c358f; --primary-fg:#ffffff;
+    --primary-soft:#ece5f7; --primary-text:#4c2a86;
+    --ok:#2f7d5b; --ok-soft:#e2f1e9; --warn:#b57314; --warn-soft:#f7ecda;
+    --danger:#b23b3b; --danger-soft:#f6e3e1; --info:#2f6396; --info-soft:#e2ecf5;
+    --shadow:0 1px 2px rgba(45,25,70,.05), 0 2px 8px rgba(45,25,70,.05);
+    --shadow-lg:0 8px 30px rgba(45,25,70,.14);
+    --c1:#4c2a86; --c2:#2f7d72; --c3:#b06a1a; --c4:#395fa8; --c5:#8a3d7a;
+    font-family:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+    color:var(--text); background:var(--bg); min-height:100vh; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app-root[data-theme="dark"]{
+    --bg:#161320; --surface:#201b2c; --surface-2:#282234; --surface-3:#322b40;
+    --text:#ece8f2; --muted:#a49bb4; --faint:#786f8a; --border:#332c42; --border-2:#2b2438;
+    --primary:#8b5cf0; --primary-hover:#9d74f4; --primary-fg:#ffffff;
+    --primary-soft:#2b2140; --primary-text:#c9b6f5;
+    --ok:#5cc48f; --ok-soft:#1e3329; --warn:#e0a34d; --warn-soft:#372c18;
+    --danger:#e78585; --danger-soft:#3a2222; --info:#78aae0; --info-soft:#1e2c3c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.25);
+    --shadow-lg:0 8px 30px rgba(0,0,0,.5);
+    --c1:#a78bfa; --c2:#5cc4b4; --c3:#e0a34d; --c4:#79a2e6; --c5:#d67cc0;
+  }
+  .app-root svg{display:block}
+  .sc-hidden{display:none !important}
+  .lnk{color:var(--primary-text);text-decoration:none}
+  .lnk:hover{text-decoration:underline}
+  ::selection{background:var(--primary-soft)}
+  .app-root ::-webkit-scrollbar{width:11px;height:11px}
+  .app-root ::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:3px solid var(--bg)}
+  input,select,textarea,button{font-family:inherit}
+  @keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div class="app-root" data-theme="{{ resolved }}" style="display:flex;flex-direction:column">
+
+  <!-- ===================== PUBLIC ===================== -->
+  <sc-if value="{{ isPublic }}" hint-placeholder-val="{{ true }}">
+  <div>
+    <!-- public top nav -->
+    <header style="position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--surface) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
+      <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px">
+        <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;cursor:pointer;margin-right:auto">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--primary);color:var(--primary-fg);display:grid;place-items:center;font-weight:700;font-size:17px;box-shadow:var(--shadow)">RV</div>
+          <div style="line-height:1.15">
+            <div style="font-weight:700;font-size:15px">คลังงานวิจัย</div>
+            <div style="font-size:11px;color:var(--muted)">วิทยาลัยอาชีวศึกษาร้อยเอ็ด</div>
+          </div>
+        </div>
+        <nav style="display:flex;gap:4px;align-items:center">
+          <button onClick="{{ goHome }}" style="{{ navHomeStyle }}">หน้าแรก</button>
+          <button onClick="{{ goSearch }}" style="{{ navSearchStyle }}">สืบค้นงานวิจัย</button>
+        </nav>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onClick="{{ cycleTheme }}" title="สลับโหมดแสดงผล" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:12px;font-weight:600">{{ themeGlyph }}</button>
+          <button onClick="{{ goAdmin }}" style="height:38px;padding:0 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer">เข้าสู่ระบบ</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <section style="background:linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, #1c1030) 100%);color:#fff;padding:66px 24px 80px">
+        <div style="max-width:840px;margin:0 auto;text-align:center">
+          <div style="display:inline-block;font-size:12.5px;font-weight:500;letter-spacing:.04em;background:rgba(255,255,255,.14);padding:6px 14px;border-radius:999px;margin-bottom:20px">คลังปัญญา · เผยแพร่ · ต่อยอด</div>
+          <h1 style="font-size:40px;line-height:1.2;font-weight:700;margin:0 0 14px;text-wrap:balance">ระบบคลังงานวิจัยและโครงงาน</h1>
+          <p style="font-size:17px;opacity:.9;margin:0 auto 30px;max-width:600px;text-wrap:pretty">รวบรวมงานวิจัยของครู โครงงานนักเรียนนักศึกษา สิ่งประดิษฐ์ และโครงงานวิทยาศาสตร์ ของวิทยาลัยอาชีวศึกษาร้อยเอ็ด</p>
+          <div style="display:flex;background:var(--surface);border-radius:14px;padding:7px;box-shadow:var(--shadow-lg);max-width:620px;margin:0 auto;gap:6px">
+            <input value="{{ q }}" onInput="{{ setQuery }}" onKeyDown="{{ heroSearchKey }}" placeholder="ค้นหาชื่อเรื่อง ผู้จัดทำ หรือคำสำคัญ…" style="flex:1;border:none;background:transparent;color:var(--text);font-size:15px;padding:12px 14px;outline:none"/>
+            <button onClick="{{ goSearch }}" style="background:var(--primary);color:var(--primary-fg);border:none;border-radius:9px;padding:0 24px;font-weight:600;font-size:14.5px;cursor:pointer">ค้นหา</button>
+          </div>
+          <div style="margin-top:16px;font-size:13px;opacity:.82;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <span>ยอดนิยม:</span>
+            <a class="lnk" onClick="{{ quickSearch }}" data-q="ผ้าไหม" style="color:#fff;opacity:.95;cursor:pointer">ผ้าไหม</a>·
+            <a class="lnk" onClick="{{ quickSearch }}" data-q="พลังงานแสงอาทิตย์" style="color:#fff;opacity:.95;cursor:pointer">พลังงานแสงอาทิตย์</a>·
+            <a class="lnk" onClick="{{ quickSearch }}" data-q="บัญชี" style="color:#fff;opacity:.95;cursor:pointer">บัญชี</a>
+          </div>
+        </div>
+      </section>
+
+      <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+        <!-- stats -->
+        <section style="margin-top:-42px;position:relative;z-index:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)">
+            <div style="font-size:13px;color:var(--muted);font-weight:500">งานวิจัยทั้งหมด</div>
+            <div style="font-size:34px;font-weight:700;margin-top:4px">{{ stats.total }}</div>
+            <div style="font-size:12px;color:var(--muted)">เผยแพร่แล้ว</div>
+          </div>
+          <sc-for list="{{ stats.cats }}" as="c" hint-placeholder-count="4">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)">
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:{{ c.color }}"></span><div style="font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.3">{{ c.name }}</div></div>
+              <div style="font-size:30px;font-weight:700;margin-top:6px">{{ c.count }}</div>
+            </div>
+          </sc-for>
+        </section>
+
+        <!-- latest -->
+        <section style="margin:52px 0 70px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+            <h2 style="font-size:23px;font-weight:700;margin:0">งานวิจัยล่าสุด</h2>
+            <a class="lnk" onClick="{{ goSearch }}" style="cursor:pointer;font-weight:600;font-size:14px">ดูทั้งหมด →</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px">
+            <sc-for list="{{ latest }}" as="r" hint-placeholder-count="6">
+              <div onClick="{{ selectResearch }}" data-id="{{ r.id }}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s, box-shadow .12s;display:flex;flex-direction:column;gap:10px" style-hover="transform:translateY(-3px);box-shadow:var(--shadow-lg)">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                  <span style="font-size:11.5px;font-weight:600;color:{{ r.color }};background:color-mix(in srgb, {{ r.color }} 13%, transparent);padding:4px 10px;border-radius:999px">{{ r.catName }}</span>
+                  <span style="font-size:12px;color:var(--faint)">{{ r.pubYear }}</span>
+                </div>
+                <div style="font-weight:600;font-size:15.5px;line-height:1.4;color:var(--text)">{{ r.titleTh }}</div>
+                <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:-2px">{{ r.abstractShort }}</div>
+                <div style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border-2);display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)">
+                  <span style="width:24px;height:24px;border-radius:50%;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;font-weight:600;font-size:11px">{{ r.authorInitial }}</span>
+                  <span>{{ r.leadAuthor }} · {{ r.dept }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+      <footer style="border-top:1px solid var(--border);background:var(--surface-2);padding:28px 24px;text-align:center;font-size:12.5px;color:var(--muted)">© 2568 วิทยาลัยอาชีวศึกษาร้อยเอ็ด · ระบบคลังงานวิจัย (Research Repository)</footer>
+    </div>
+    </sc-if>
+
+    <!-- SEARCH -->
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1200px;margin:0 auto;padding:28px 24px 70px">
+      <h1 style="font-size:26px;font-weight:700;margin:0 0 4px">สืบค้นงานวิจัยขั้นสูง</h1>
+      <p style="color:var(--muted);margin:0 0 22px;font-size:14px">ค้นจากชื่อเรื่อง ผู้จัดทำ คำสำคัญ และบทคัดย่อ พร้อมตัวกรองและการเรียงลำดับ</p>
+      <div style="display:grid;grid-template-columns:270px 1fr;gap:26px;align-items:start">
+        <!-- filters -->
+        <aside style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);position:sticky;top:80px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-weight:600;font-size:14.5px">ตัวกรอง</div><button onClick="{{ clearFilters }}" style="background:none;border:none;color:var(--primary-text);font-weight:600;font-size:12.5px;cursor:pointer">ล้าง</button></div>
+          <label style="font-size:12.5px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px">ประเภทงานวิจัย</label>
+          <select value="{{ fCat }}" onChange="{{ setFilterCat }}" style="{{ inputStyle }}">
+            <option value="">ทุกประเภท</option>
+            <sc-for list="{{ enabledCats }}" as="c" hint-placeholder-count="4"><option value="{{ c.id }}">{{ c.name }}</option></sc-for>
+          </select>
+          <label style="font-size:12.5px;font-weight:500;color:var(--muted);display:block;margin:14px 0 6px">สาขาวิชา/แผนกวิชา</label>
+          <select value="{{ fDept }}" onChange="{{ setFilterDept }}" style="{{ inputStyle }}">
+            <option value="">ทุกสาขา</option>
+            <sc-for list="{{ depts }}" as="d" hint-placeholder-count="5"><option value="{{ d }}">{{ d }}</option></sc-for>
+          </select>
+          <label style="font-size:12.5px;font-weight:500;color:var(--muted);display:block;margin:14px 0 6px">ปีที่เผยแพร่</label>
+          <select value="{{ fYear }}" onChange="{{ setFilterYear }}" style="{{ inputStyle }}">
+            <option value="">ทุกปี</option>
+            <sc-for list="{{ years }}" as="y" hint-placeholder-count="4"><option value="{{ y }}">{{ y }}</option></sc-for>
+          </select>
+        </aside>
+        <!-- results -->
+        <div>
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 14px;box-shadow:var(--shadow)">
+              <span style="color:var(--faint);font-size:15px">⌕</span>
+              <input value="{{ q }}" onInput="{{ setQuery }}" placeholder="พิมพ์คำค้น…" style="flex:1;border:none;background:transparent;color:var(--text);font-size:14.5px;padding:11px 0;outline:none"/>
+            </div>
+            <select value="{{ sort }}" onChange="{{ setSort }}" style="{{ inputStyle }};max-width:190px;box-shadow:var(--shadow)">
+              <option value="new">ใหม่สุดก่อน</option>
+              <option value="old">เก่าสุดก่อน</option>
+              <option value="az">ชื่อเรื่อง ก-ฮ</option>
+            </select>
+          </div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px">พบ <b style="color:var(--text)">{{ results.length }}</b> รายการ</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="4">
+              <div onClick="{{ selectResearch }}" data-id="{{ r.id }}" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);cursor:pointer;display:flex;gap:16px;align-items:flex-start" style-hover="border-color:var(--primary)">
+                <div style="width:46px;height:46px;border-radius:10px;background:color-mix(in srgb, {{ r.color }} 14%, transparent);color:{{ r.color }};display:grid;place-items:center;font-weight:700;flex:none">{{ r.pubYearShort }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px">
+                    <span style="font-size:11px;font-weight:600;color:{{ r.color }}">{{ r.catName }}</span>
+                    <span style="color:var(--faint)">·</span>
+                    <span style="font-size:11.5px;color:var(--muted)">{{ r.dept }}</span>
+                  </div>
+                  <div style="font-weight:600;font-size:15.5px;line-height:1.4">{{ r.titleTh }}</div>
+                  <div style="font-size:12.5px;color:var(--muted);margin-top:3px">{{ r.titleEn }}</div>
+                  <div style="font-size:12.5px;color:var(--muted);margin-top:8px">{{ r.authorsLine }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:50px 20px;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:14px">ไม่พบงานวิจัยที่ตรงกับเงื่อนไข ลองปรับคำค้นหรือตัวกรอง</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- DETAIL -->
+    <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1060px;margin:0 auto;padding:22px 24px 70px">
+      <button onClick="{{ goSearch }}" style="background:none;border:none;color:var(--muted);font-size:13.5px;cursor:pointer;padding:6px 0;font-weight:500">← กลับไปยังผลการค้นหา</button>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-top:8px">
+        <div style="padding:28px 32px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, var(--primary-soft), transparent)">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;font-weight:600;color:#fff;background:{{ current.color }};padding:5px 12px;border-radius:999px">{{ current.catName }}</span>
+            <span style="font-size:12.5px;color:var(--muted)">ปีที่เผยแพร่ {{ current.pubYear }} · ปีการศึกษา {{ current.academicYear }}</span>
+          </div>
+          <h1 style="font-size:26px;line-height:1.35;font-weight:700;margin:0 0 6px;text-wrap:balance">{{ current.titleTh }}</h1>
+          <div style="font-size:15px;color:var(--muted);font-style:italic">{{ current.titleEn }}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:0">
+          <div style="padding:28px 32px;min-width:0">
+            <h3 style="font-size:15px;font-weight:700;margin:0 0 8px;color:var(--primary-text)">บทคัดย่อ</h3>
+            <p style="font-size:14.5px;line-height:1.75;margin:0 0 18px;text-wrap:pretty">{{ current.abstractTh }}</p>
+            <h3 style="font-size:14px;font-weight:700;margin:0 0 8px;color:var(--muted)">Abstract</h3>
+            <p style="font-size:13.5px;line-height:1.7;margin:0 0 22px;color:var(--muted);text-wrap:pretty">{{ current.abstractEn }}</p>
+            <h3 style="font-size:14px;font-weight:700;margin:0 0 10px">คำสำคัญ</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <sc-for list="{{ current.keywords }}" as="k" hint-placeholder-count="4"><span style="font-size:12.5px;background:var(--surface-3);color:var(--text);padding:5px 12px;border-radius:8px">{{ k }}</span></sc-for>
+            </div>
+            <h3 style="font-size:15px;font-weight:700;margin:0 0 12px">เอกสารงานวิจัย</h3>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">เปิดเผยเฉพาะบางส่วนตามที่ผู้จัดทำอนุญาต</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ current.files }}" as="f" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)">
+                  <span style="width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:700;background:{{ f.iconBg }};color:{{ f.iconFg }}">PDF</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;font-weight:500">{{ f.name }}</div>
+                    <div style="font-size:11.5px;color:var(--muted)">{{ f.meta }}</div>
+                  </div>
+                  <sc-if value="{{ f.open }}" hint-placeholder-val="{{ true }}"><button style="background:var(--primary-soft);color:var(--primary-text);border:none;border-radius:8px;padding:7px 14px;font-weight:600;font-size:12.5px;cursor:pointer">ดาวน์โหลด</button></sc-if>
+                  <sc-if value="{{ f.locked }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--faint);display:flex;align-items:center;gap:5px">🔒 ไม่เปิดเผย</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <aside style="padding:28px 28px;border-left:1px solid var(--border);background:var(--surface-2)">
+            <h3 style="font-size:14px;font-weight:700;margin:0 0 12px">ผู้จัดทำ</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+              <sc-for list="{{ current.authors }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;gap:10px;align-items:center">
+                  <span style="width:34px;height:34px;border-radius:50%;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none">{{ a.initial }}</span>
+                  <div style="min-width:0"><div style="font-size:13.5px;font-weight:500;line-height:1.3">{{ a.name }}</div><div style="font-size:11.5px;color:var(--muted)">{{ a.role }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+            <dl style="margin:0;font-size:13px;display:flex;flex-direction:column;gap:12px">
+              <div><dt style="color:var(--muted);font-size:11.5px;margin-bottom:2px">สาขาวิชา/แผนกวิชา</dt><dd style="margin:0;font-weight:500">{{ current.dept }}</dd></div>
+              <div><dt style="color:var(--muted);font-size:11.5px;margin-bottom:2px">ปีการศึกษา</dt><dd style="margin:0;font-weight:500">{{ current.academicYear }}</dd></div>
+              <div><dt style="color:var(--muted);font-size:11.5px;margin-bottom:2px">ปีที่เผยแพร่</dt><dd style="margin:0;font-weight:500">{{ current.pubYear }}</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ===================== ADMIN ===================== -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;min-height:100vh">
+    <!-- sidebar -->
+    <aside style="width:{{ sidebarW }};flex:none;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .18s;overflow:hidden">
+      <div style="height:64px;display:flex;align-items:center;gap:11px;padding:0 18px;border-bottom:1px solid var(--border)">
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;flex:none">RV</div>
+        <div class="{{ hideCollapsed }}" style="line-height:1.15;white-space:nowrap"><div style="font-weight:700;font-size:14px">ผู้ดูแลระบบ</div><div style="font-size:11px;color:var(--muted)">Research Repository</div></div>
+      </div>
+      <nav style="padding:14px 12px;display:flex;flex-direction:column;gap:3px;flex:1;overflow-y:auto">
+        <div class="{{ hideCollapsed }}" style="font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:.06em;padding:8px 12px 4px">เมนูหลัก</div>
+        <button onClick="{{ setAdminView }}" data-v="dashboard" style="{{ navd_dashboard }}"><span style="flex:none;width:20px;display:grid;place-items:center">▦</span><span class="{{ hideCollapsed }}">แดชบอร์ด</span></button>
+        <button onClick="{{ setAdminView }}" data-v="research" style="{{ navd_research }}"><span style="flex:none;width:20px;display:grid;place-items:center">≣</span><span class="{{ hideCollapsed }}">จัดการงานวิจัย</span></button>
+        <button onClick="{{ setAdminView }}" data-v="submit" style="{{ navd_submit }}"><span style="flex:none;width:20px;display:grid;place-items:center">↑</span><span class="{{ hideCollapsed }}">นำเข้างานวิจัย</span></button>
+        <div class="{{ hideCollapsed }}" style="font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:.06em;padding:14px 12px 4px">ตั้งค่า</div>
+        <button onClick="{{ setAdminView }}" data-v="categories" style="{{ navd_categories }}"><span style="flex:none;width:20px;display:grid;place-items:center">◈</span><span class="{{ hideCollapsed }}">จัดการประเภท</span></button>
+        <button onClick="{{ setAdminView }}" data-v="users" style="{{ navd_users }}"><span style="flex:none;width:20px;display:grid;place-items:center">◍</span><span class="{{ hideCollapsed }}">จัดการผู้ใช้</span></button>
+      </nav>
+      <div style="padding:12px;border-top:1px solid var(--border)">
+        <button onClick="{{ goHome }}" style="{{ navd_plain }}"><span style="flex:none;width:20px;display:grid;place-items:center">◄</span><span class="{{ hideCollapsed }}">ดูเว็บสาธารณะ</span></button>
+      </div>
+    </aside>
+
+    <!-- main -->
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:64px;flex:none;background:color-mix(in srgb, var(--surface) 90%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 22px;position:sticky;top:0;z-index:20">
+        <button onClick="{{ toggleSidebar }}" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px">☰</button>
+        <div style="font-weight:700;font-size:16px">{{ adminTitle }}</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <button onClick="{{ cycleTheme }}" title="สลับโหมด" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:11.5px;font-weight:600">{{ themeGlyph }}</button>
+          <div style="display:flex;align-items:center;gap:9px;padding-left:6px">
+            <div style="text-align:right;line-height:1.2" class="{{ hideCollapsed }}"><div style="font-size:13px;font-weight:600">สมชาย ใจดี</div><div style="font-size:11px;color:var(--muted)">ผู้ดูแลระบบ</div></div>
+            <span style="width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600">สช</span>
+          </div>
+        </div>
+      </header>
+
+      <main style="flex:1;padding:26px;overflow-x:hidden">
+
+        <!-- DASHBOARD -->
+        <sc-if value="{{ isAdmDash }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fade .25s">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px">
+            <sc-for list="{{ dashStats }}" as="s" hint-placeholder-count="4">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:13px;color:var(--muted);font-weight:500">{{ s.label }}</div><span style="width:32px;height:32px;border-radius:9px;background:{{ s.bg }};color:{{ s.fg }};display:grid;place-items:center;font-weight:700;font-size:14px">{{ s.icon }}</span></div>
+                <div style="font-size:30px;font-weight:700;margin-top:8px">{{ s.value }}</div>
+                <div style="font-size:12px;color:{{ s.deltaColor }};font-weight:500">{{ s.delta }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:18px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+              <div style="font-weight:600;font-size:15px;margin-bottom:18px">จำนวนงานวิจัยแยกตามประเภท</div>
+              <div style="display:flex;flex-direction:column;gap:15px">
+                <sc-for list="{{ catBars }}" as="b" hint-placeholder-count="4">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:var(--text)">{{ b.name }}</span><span style="color:var(--muted);font-weight:600">{{ b.count }}</span></div>
+                    <div style="height:9px;background:var(--surface-3);border-radius:99px;overflow:hidden"><div style="height:100%;width:{{ b.pct }};background:{{ b.color }};border-radius:99px;transition:width .5s"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+              <div style="font-weight:600;font-size:15px;margin-bottom:18px">แยกตามปีที่เผยแพร่</div>
+              <div style="display:flex;align-items:flex-end;gap:14px;height:150px;padding-top:10px">
+                <sc-for list="{{ yearBars }}" as="y" hint-placeholder-count="4">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end">
+                    <div style="font-size:12px;font-weight:600;color:var(--muted)">{{ y.count }}</div>
+                    <div style="width:100%;height:{{ y.pct }};background:linear-gradient(180deg,var(--primary),color-mix(in srgb,var(--primary) 60%, transparent));border-radius:7px 7px 0 0;min-height:6px;transition:height .5s"></div>
+                    <div style="font-size:11.5px;color:var(--muted)">{{ y.year }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">รายการรอตรวจสอบ</div><span style="font-size:12px;font-weight:600;color:var(--warn);background:var(--warn-soft);padding:4px 11px;border-radius:999px">{{ pending.length }} รายการ</span></div>
+            <div>
+              <sc-for list="{{ pending }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border-2)">
+                  <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">{{ r.titleTh }}</div><div style="font-size:12px;color:var(--muted)">{{ r.catName }} · {{ r.leadAuthor }} · {{ r.dept }}</div></div>
+                  <button onClick="{{ approve }}" data-id="{{ r.id }}" style="background:var(--ok);color:#fff;border:none;border-radius:8px;padding:7px 15px;font-weight:600;font-size:12.5px;cursor:pointer">อนุมัติเผยแพร่</button>
+                  <button onClick="{{ selectResearchAdmin }}" data-id="{{ r.id }}" style="background:var(--surface-3);color:var(--text);border:none;border-radius:8px;padding:7px 13px;font-weight:600;font-size:12.5px;cursor:pointer">ดู</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}"><div style="padding:26px;text-align:center;color:var(--muted);font-size:13.5px">ไม่มีรายการรอตรวจสอบ ✓</div></sc-if>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- MANAGE RESEARCH -->
+        <sc-if value="{{ isAdmResearch }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fade .25s">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 14px;box-shadow:var(--shadow)"><span style="color:var(--faint)">⌕</span><input value="{{ mq }}" onInput="{{ setMq }}" placeholder="ค้นหางานวิจัย…" style="flex:1;border:none;background:transparent;color:var(--text);font-size:14px;padding:10px 0;outline:none"/></div>
+            <select value="{{ mStatus }}" onChange="{{ setMStatus }}" style="{{ inputStyle }};max-width:180px;box-shadow:var(--shadow)"><option value="">ทุกสถานะ</option><option value="เผยแพร่">เผยแพร่</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="แบบร่าง">แบบร่าง</option><option value="ไม่เผยแพร่">ไม่เผยแพร่</option></select>
+            <button onClick="{{ setAdminView }}" data-v="submit" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow)">+ เพิ่มงานวิจัย</button>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px">
+              <thead><tr style="background:var(--surface-2);text-align:left;color:var(--muted)">
+                <th style="padding:13px 18px;font-weight:600">ชื่องานวิจัย</th>
+                <th style="padding:13px 12px;font-weight:600">ประเภท</th>
+                <th style="padding:13px 12px;font-weight:600">ปี</th>
+                <th style="padding:13px 12px;font-weight:600">สถานะ</th>
+                <th style="padding:13px 18px;font-weight:600;text-align:right">จัดการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ adminResearch }}" as="r" hint-placeholder-count="6">
+                  <tr style="border-top:1px solid var(--border-2)">
+                    <td style="padding:13px 18px;max-width:360px"><div style="font-weight:500;line-height:1.35">{{ r.titleTh }}</div><div style="font-size:11.5px;color:var(--muted)">{{ r.leadAuthor }} · {{ r.dept }}</div></td>
+                    <td style="padding:13px 12px"><span style="font-size:11.5px;color:{{ r.color }};font-weight:500">{{ r.catName }}</span></td>
+                    <td style="padding:13px 12px;color:var(--muted)">{{ r.pubYear }}</td>
+                    <td style="padding:13px 12px"><span style="font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ r.statusBg }};color:{{ r.statusFg }}">{{ r.status }}</span></td>
+                    <td style="padding:13px 18px;text-align:right;white-space:nowrap">
+                      <button onClick="{{ cycleStatus }}" data-id="{{ r.id }}" title="เปลี่ยนสถานะ" style="{{ iconBtn }}">⟳</button>
+                      <button onClick="{{ selectResearchAdmin }}" data-id="{{ r.id }}" title="ดู" style="{{ iconBtn }}">👁</button>
+                      <button onClick="{{ deleteResearch }}" data-id="{{ r.id }}" title="ลบ" style="{{ iconBtnDanger }}">🗑</button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            </div>
+            <sc-if value="{{ noAdminResearch }}" hint-placeholder-val="{{ false }}"><div style="padding:30px;text-align:center;color:var(--muted)">ไม่พบรายการ</div></sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- CATEGORIES -->
+        <sc-if value="{{ isAdmCat }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fade .25s">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <p style="margin:0;color:var(--muted);font-size:13.5px;max-width:520px">เพิ่ม ลบ แก้ไขชื่อ และเปิด/ปิดการใช้งานประเภทงานวิจัย ประเภทที่ปิดจะไม่แสดงในฟอร์มนำเข้าและหน้าสาธารณะ</p>
+            <div style="display:flex;gap:8px">
+              <input value="{{ catDraft }}" onInput="{{ setCatDraft }}" onKeyDown="{{ catDraftKey }}" placeholder="ชื่อประเภทใหม่…" style="{{ inputStyle }};width:220px;box-shadow:var(--shadow)"/>
+              <button onClick="{{ addCategory }}" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:0 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow);white-space:nowrap">+ เพิ่มประเภท</button>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+            <table style="width:100%;border-collapse:collapse;font-size:14px">
+              <thead><tr style="background:var(--surface-2);text-align:left;color:var(--muted)">
+                <th style="padding:13px 20px;font-weight:600">ประเภทงานวิจัย</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center">จำนวนงานวิจัย</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center">สถานะ</th>
+                <th style="padding:13px 20px;font-weight:600;text-align:right">จัดการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="4">
+                  <tr style="border-top:1px solid var(--border-2)">
+                    <td style="padding:14px 20px">
+                      <div style="display:flex;align-items:center;gap:11px">
+                        <span style="width:11px;height:11px;border-radius:3px;background:{{ c.color }};flex:none"></span>
+                        <sc-if value="{{ c.editing }}" hint-placeholder-val="{{ false }}"><input value="{{ c.name }}" data-id="{{ c.id }}" onInput="{{ editCatName }}" onKeyDown="{{ editCatKey }}" style="{{ inputStyle }};padding:7px 10px;width:280px" autofocus/></sc-if>
+                        <sc-if value="{{ c.notEditing }}" hint-placeholder-val="{{ true }}"><span style="font-weight:500">{{ c.name }}</span></sc-if>
+                      </div>
+                    </td>
+                    <td style="padding:14px 12px;text-align:center;color:var(--muted);font-weight:600">{{ c.count }}</td>
+                    <td style="padding:14px 12px;text-align:center">
+                      <button onClick="{{ toggleCat }}" data-id="{{ c.id }}" title="เปิด/ปิด" style="width:44px;height:25px;border-radius:99px;border:none;cursor:pointer;position:relative;transition:background .18s;background:{{ c.toggleBg }}">
+                        <span style="position:absolute;top:3px;left:{{ c.knobLeft }};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 2px rgba(0,0,0,.3)"></span>
+                      </button>
+                      <div style="font-size:11px;color:{{ c.statusColor }};font-weight:600;margin-top:3px">{{ c.statusLabel }}</div>
+                    </td>
+                    <td style="padding:14px 20px;text-align:right;white-space:nowrap">
+                      <button onClick="{{ startEditCat }}" data-id="{{ c.id }}" title="แก้ไขชื่อ" style="{{ iconBtn }}">✎</button>
+                      <button onClick="{{ deleteCategory }}" data-id="{{ c.id }}" title="ลบ" style="{{ iconBtnDanger }}">🗑</button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- USERS -->
+        <sc-if value="{{ isAdmUsers }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fade .25s">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><p style="margin:0;color:var(--muted);font-size:13.5px">จัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง</p><button onClick="{{ toastSoon }}" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow)">+ เพิ่มผู้ใช้</button></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px">
+              <thead><tr style="background:var(--surface-2);text-align:left;color:var(--muted)">
+                <th style="padding:13px 20px;font-weight:600">ผู้ใช้</th>
+                <th style="padding:13px 12px;font-weight:600">บทบาท</th>
+                <th style="padding:13px 12px;font-weight:600">สาขา/แผนก</th>
+                <th style="padding:13px 12px;font-weight:600;text-align:center">งานวิจัย</th>
+                <th style="padding:13px 20px;font-weight:600;text-align:right">จัดการ</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ users }}" as="u" hint-placeholder-count="5">
+                  <tr style="border-top:1px solid var(--border-2)">
+                    <td style="padding:13px 20px"><div style="display:flex;align-items:center;gap:11px"><span style="width:34px;height:34px;border-radius:50%;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;font-weight:600;font-size:12px;flex:none">{{ u.initial }}</span><div><div style="font-weight:500">{{ u.name }}</div><div style="font-size:11.5px;color:var(--muted)">{{ u.email }}</div></div></div></td>
+                    <td style="padding:13px 12px"><span style="font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ u.roleBg }};color:{{ u.roleFg }}">{{ u.role }}</span></td>
+                    <td style="padding:13px 12px;color:var(--muted)">{{ u.dept }}</td>
+                    <td style="padding:13px 12px;text-align:center;font-weight:600">{{ u.count }}</td>
+                    <td style="padding:13px 20px;text-align:right;white-space:nowrap"><button onClick="{{ toastSoon }}" title="แก้ไข" style="{{ iconBtn }}">✎</button><button onClick="{{ toastSoon }}" title="ระงับ" style="{{ iconBtn }}">⊘</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- SUBMIT FORM -->
+        <sc-if value="{{ isAdmSubmit }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fade .25s;max-width:960px">
+          <p style="margin:0 0 18px;color:var(--muted);font-size:13.5px">กรอกข้อมูลงานวิจัยและอัปโหลดเอกสารแยกเป็นบท ระบบจะบันทึกเป็นแบบร่างจนกว่าจะส่งตรวจสอบ</p>
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+            <!-- left: fields -->
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+                <div style="font-weight:600;font-size:15px;margin-bottom:16px">ข้อมูลงานวิจัย</div>
+                <label style="{{ labelStyle }}">ชื่องานวิจัย (ภาษาไทย) *</label>
+                <input value="{{ form.titleTh }}" data-f="titleTh" onInput="{{ updateForm }}" placeholder="เช่น การพัฒนาระบบ…" style="{{ inputStyle }};margin-bottom:14px"/>
+                <label style="{{ labelStyle }}">ชื่องานวิจัย (ภาษาอังกฤษ)</label>
+                <input value="{{ form.titleEn }}" data-f="titleEn" onInput="{{ updateForm }}" placeholder="e.g. Development of…" style="{{ inputStyle }};margin-bottom:14px"/>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div><label style="{{ labelStyle }}">ประเภทงานวิจัย *</label><select value="{{ form.catId }}" data-f="catId" onChange="{{ updateForm }}" style="{{ inputStyle }}"><option value="">— เลือกประเภท —</option><sc-for list="{{ enabledCats }}" as="c" hint-placeholder-count="4"><option value="{{ c.id }}">{{ c.name }}</option></sc-for></select></div>
+                  <div><label style="{{ labelStyle }}">สาขาวิชา/แผนกวิชา</label><select value="{{ form.dept }}" data-f="dept" onChange="{{ updateForm }}" style="{{ inputStyle }}"><option value="">— เลือก —</option><sc-for list="{{ depts }}" as="d" hint-placeholder-count="5"><option value="{{ d }}">{{ d }}</option></sc-for></select></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+                  <div><label style="{{ labelStyle }}">ปีการศึกษา</label><input value="{{ form.academicYear }}" data-f="academicYear" onInput="{{ updateForm }}" placeholder="2568" style="{{ inputStyle }}"/></div>
+                  <div><label style="{{ labelStyle }}">ปีที่เผยแพร่</label><input value="{{ form.pubYear }}" data-f="pubYear" onInput="{{ updateForm }}" placeholder="2568" style="{{ inputStyle }}"/></div>
+                </div>
+              </div>
+
+              <!-- authors -->
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-weight:600;font-size:15px">ผู้จัดทำ</div><button onClick="{{ addAuthor }}" style="background:var(--primary-soft);color:var(--primary-text);border:none;border-radius:8px;padding:7px 13px;font-weight:600;font-size:12.5px;cursor:pointer">+ เพิ่มผู้จัดทำ</button></div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ form.authors }}" as="a" hint-placeholder-count="2">
+                    <div style="display:flex;gap:10px;align-items:center">
+                      <input value="{{ a.name }}" data-i="{{ a.i }}" data-k="name" onInput="{{ updateAuthor }}" placeholder="ชื่อ-สกุล" style="{{ inputStyle }};flex:1"/>
+                      <select value="{{ a.role }}" data-i="{{ a.i }}" data-k="role" onChange="{{ updateAuthor }}" style="{{ inputStyle }};width:160px"><option>ผู้วิจัยหลัก</option><option>ผู้วิจัยร่วม</option><option>ครูที่ปรึกษา</option></select>
+                      <button onClick="{{ removeAuthor }}" data-i="{{ a.i }}" style="{{ iconBtnDanger }};flex:none">✕</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <!-- abstract + keywords -->
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+                <div style="font-weight:600;font-size:15px;margin-bottom:16px">บทคัดย่อและคำสำคัญ</div>
+                <label style="{{ labelStyle }}">บทคัดย่อ (ภาษาไทย)</label>
+                <textarea value="{{ form.abstractTh }}" data-f="abstractTh" onInput="{{ updateForm }}" rows="4" placeholder="สรุปสาระสำคัญของงานวิจัย…" style="{{ inputStyle }};resize:vertical;margin-bottom:14px"></textarea>
+                <label style="{{ labelStyle }}">บทคัดย่อ (ภาษาอังกฤษ)</label>
+                <textarea value="{{ form.abstractEn }}" data-f="abstractEn" onInput="{{ updateForm }}" rows="3" placeholder="Abstract…" style="{{ inputStyle }};resize:vertical;margin-bottom:14px"></textarea>
+                <label style="{{ labelStyle }}">คำสำคัญ (กด Enter เพื่อเพิ่ม)</label>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface-2)">
+                  <sc-for list="{{ form.keywords }}" as="k" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;background:var(--primary-soft);color:var(--primary-text);padding:4px 6px 4px 11px;border-radius:7px">{{ k.text }}<button onClick="{{ removeKeyword }}" data-i="{{ k.i }}" style="background:none;border:none;color:var(--primary-text);cursor:pointer;font-size:13px;line-height:1;padding:0 2px">✕</button></span></sc-for>
+                  <input value="{{ kwDraft }}" onInput="{{ setKwDraft }}" onKeyDown="{{ kwKey }}" placeholder="พิมพ์แล้วกด Enter…" style="flex:1;min-width:120px;border:none;background:transparent;color:var(--text);font-size:13.5px;padding:5px;outline:none"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- right: files + status + submit -->
+            <div style="display:flex;flex-direction:column;gap:18px;position:sticky;top:80px">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+                <div style="font-weight:600;font-size:15px;margin-bottom:4px">สถานะการเผยแพร่</div>
+                <select value="{{ form.status }}" data-f="status" onChange="{{ updateForm }}" style="{{ inputStyle }};margin-top:8px"><option>แบบร่าง</option><option>รอตรวจสอบ</option><option>เผยแพร่</option><option>ไม่เผยแพร่</option></select>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-weight:600;font-size:15px">เอกสารแยกบท</div><span style="font-size:12px;font-weight:600;color:var(--primary-text)">{{ uploadedCount }}/{{ chapterTotal }}</span></div>
+                <div style="height:6px;background:var(--surface-3);border-radius:99px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:{{ uploadPct }};background:var(--primary);border-radius:99px;transition:width .3s"></div></div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ form.chapters }}" as="ch" hint-placeholder-count="10">
+                    <div onClick="{{ toggleChapter }}" data-i="{{ ch.i }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px dashed {{ ch.borderColor }};border-radius:10px;cursor:pointer;background:{{ ch.rowBg }};transition:all .15s">
+                      <span style="width:22px;height:22px;border-radius:6px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;background:{{ ch.badgeBg }};color:{{ ch.badgeFg }}">{{ ch.badge }}</span>
+                      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">{{ ch.name }}</div><div style="font-size:11px;color:var(--muted)">{{ ch.hint }}</div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11px;color:var(--faint);margin-top:12px;text-align:center">คลิกเพื่อจำลองการอัปโหลด · รองรับลากวางไฟล์ PDF</div>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button onClick="{{ submitForm }}" style="flex:1;background:var(--primary);color:#fff;border:none;border-radius:11px;padding:13px;font-weight:600;font-size:14.5px;cursor:pointer;box-shadow:var(--shadow)">บันทึกงานวิจัย</button>
+                <button onClick="{{ resetForm }}" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:11px;padding:13px 18px;font-weight:600;font-size:14px;cursor:pointer">ล้าง</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+      </main>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- toast -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:99;background:var(--text);color:var(--bg);padding:13px 22px;border-radius:11px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);animation:toastIn .25s;display:flex;align-items:center;gap:10px">
+      <span style="width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:12px;flex:none">✓</span>{{ toast }}
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CAT_COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)'];
+const DEPTS = ['การบัญชี','การตลาด','คอมพิวเตอร์ธุรกิจ','การโรงแรม','อาหารและโภชนาการ','เทคโนโลยีสารสนเทศ','คหกรรมศาสตร์'];
+const CHAPTER_NAMES = ['หน้าปก','บทคัดย่อ','บทที่ 1 บทนำ','บทที่ 2 เอกสารที่เกี่ยวข้อง','บทที่ 3 วิธีดำเนินการ','บทที่ 4 ผลการวิเคราะห์','บทที่ 5 สรุปและอภิปราย','บรรณานุกรม','ภาคผนวก'];
+
+function initial(name){ const t=(name||'').trim().replace(/^(นาย|นางสาว|นาง|เด็กชาย|เด็กหญิง)/,''); return t.slice(0,2) || '?'; }
+
+function mkFiles(publishedShare){
+  return CHAPTER_NAMES.map((n,i)=>({ name:n, uploaded:true, open: i<2 }));
+}
+
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const cats = [
+      {id:1,name:'งานวิจัยของครู',enabled:true},
+      {id:2,name:'โครงงานของนักเรียนนักศึกษา',enabled:true},
+      {id:3,name:'งานวิจัยสิ่งประดิษฐ์ของคนรุ่นใหม่',enabled:true},
+      {id:4,name:'โครงงานวิทยาศาสตร์',enabled:true},
+    ];
+    const R = (id,catId,dept,pubYear,ay,titleTh,titleEn,authors,keywords,status,absTh,absEn)=>(
+      {id,catId,dept,pubYear,academicYear:ay,titleTh,titleEn,authors,keywords,status,abstractTh:absTh,abstractEn:absEn,files:mkFiles()}
+    );
+    const research = [
+      R(1,1,'การบัญชี',2568,2567,'การพัฒนาระบบบัญชีอัตโนมัติสำหรับร้านค้าปลีกในชุมชน','Development of an Automated Accounting System for Community Retail Shops',
+        [{name:'นางสาวปิยะนุช ศรีวิไล',role:'ผู้วิจัยหลัก'},{name:'นายวีระพงษ์ อินทะ',role:'ผู้วิจัยร่วม'}],
+        ['ระบบบัญชี','ร้านค้าปลีก','อัตโนมัติ','ชุมชน'],'เผยแพร่',
+        'งานวิจัยนี้มีวัตถุประสงค์เพื่อพัฒนาระบบบัญชีอัตโนมัติที่ช่วยลดภาระงานของผู้ประกอบการร้านค้าปลีกในชุมชน โดยออกแบบให้ใช้งานง่ายและบันทึกรายรับรายจ่ายได้แบบเรียลไทม์ ผลการทดลองใช้พบว่าลดเวลาการทำบัญชีลงร้อยละ 62 และลดข้อผิดพลาดได้อย่างมีนัยสำคัญ',
+        'This research aims to develop an automated accounting system that reduces the workload of community retail operators, featuring an easy-to-use interface and real-time transaction recording.'),
+      R(2,2,'คอมพิวเตอร์ธุรกิจ',2568,2567,'แอปพลิเคชันสั่งอาหารออนไลน์สำหรับร้านอาหารท้องถิ่นจังหวัดร้อยเอ็ด','Online Food Ordering Application for Local Restaurants in Roi Et',
+        [{name:'นางสาวกมลชนก แสนสุข',role:'ผู้วิจัยหลัก'},{name:'นายธีรภัทร โพธิ์ศรี',role:'ผู้วิจัยร่วม'},{name:'นายอนุชิต ทองมาก',role:'ครูที่ปรึกษา'}],
+        ['แอปพลิเคชัน','สั่งอาหารออนไลน์','ร้านอาหารท้องถิ่น'],'เผยแพร่',
+        'โครงงานนี้พัฒนาแอปพลิเคชันสั่งอาหารออนไลน์เพื่อช่วยร้านอาหารท้องถิ่นเพิ่มช่องทางการขาย รองรับการแจ้งเตือนออเดอร์และระบบชำระเงิน ผลการประเมินความพึงพอใจของผู้ใช้อยู่ในระดับมากที่สุด',
+        'This project develops an online food ordering application to help local restaurants expand sales channels, supporting order notifications and payment integration.'),
+      R(3,3,'คหกรรมศาสตร์',2567,2566,'เครื่องอบแห้งพลังงานแสงอาทิตย์สำหรับผลิตภัณฑ์ข้าวแตนสมุนไพร','Solar Dryer for Herbal Rice Cracker Products',
+        [{name:'นายสิทธิชัย บุญเรือง',role:'ผู้วิจัยหลัก'},{name:'นางสาวจิราพร คำมูล',role:'ผู้วิจัยร่วม'}],
+        ['พลังงานแสงอาทิตย์','เครื่องอบแห้ง','ข้าวแตน','สิ่งประดิษฐ์'],'เผยแพร่',
+        'สิ่งประดิษฐ์นี้พัฒนาเครื่องอบแห้งพลังงานแสงอาทิตย์เพื่อทดแทนการตากแดดแบบเดิม ช่วยลดระยะเวลาการอบแห้งและควบคุมคุณภาพผลิตภัณฑ์ข้าวแตนสมุนไพรให้สม่ำเสมอ ประหยัดพลังงานและเป็นมิตรต่อสิ่งแวดล้อม',
+        'This innovation develops a solar-powered dryer to replace traditional sun drying, reducing drying time and ensuring consistent quality of herbal rice crackers.'),
+      R(4,4,'เทคโนโลยีสารสนเทศ',2567,2566,'การศึกษาคุณภาพน้ำในลำน้ำชีด้วยพืชกรองธรรมชาติ','A Study of Water Quality in the Chi River Using Natural Filter Plants',
+        [{name:'นางสาวศศิธร วงศ์ใหญ่',role:'ผู้วิจัยหลัก'},{name:'นายกิตติพงศ์ สุริยะ',role:'ผู้วิจัยร่วม'}],
+        ['คุณภาพน้ำ','ลำน้ำชี','พืชกรองน้ำ','สิ่งแวดล้อม'],'เผยแพร่',
+        'โครงงานวิทยาศาสตร์นี้ศึกษาประสิทธิภาพของพืชกรองธรรมชาติในการปรับปรุงคุณภาพน้ำในลำน้ำชี พบว่าพืชบางชนิดสามารถลดค่าความขุ่นและปริมาณสารอินทรีย์ได้อย่างมีนัยสำคัญ',
+        'This science project investigates the efficiency of natural filter plants in improving water quality in the Chi River.'),
+      R(5,1,'การตลาด',2567,2566,'กลยุทธ์การตลาดออนไลน์สำหรับผลิตภัณฑ์ผ้าไหมทอมือ','Online Marketing Strategy for Handwoven Silk Products',
+        [{name:'นางอรวรรณ พิมพ์ดี',role:'ผู้วิจัยหลัก'}],
+        ['การตลาดออนไลน์','ผ้าไหม','ทอมือ','วิสาหกิจชุมชน'],'เผยแพร่',
+        'งานวิจัยนี้ศึกษากลยุทธ์การตลาดออนไลน์ที่เหมาะสมกับผลิตภัณฑ์ผ้าไหมทอมือของกลุ่มวิสาหกิจชุมชน โดยเน้นการเล่าเรื่องอัตลักษณ์ท้องถิ่นผ่านสื่อสังคมออนไลน์ ส่งผลให้ยอดขายเพิ่มขึ้นร้อยละ 45',
+        'This research explores suitable online marketing strategies for handwoven silk products of community enterprises through local-identity storytelling.'),
+      R(6,2,'การโรงแรม',2568,2567,'ระบบจองห้องพักโรงแรมด้วยคิวอาร์โค้ด','Hotel Room Booking System Using QR Code',
+        [{name:'นางสาวเบญจวรรณ ทองสุข',role:'ผู้วิจัยหลัก'},{name:'นายภาณุวัฒน์ ดวงจันทร์',role:'ผู้วิจัยร่วม'}],
+        ['ระบบจอง','คิวอาร์โค้ด','โรงแรม'],'รอตรวจสอบ',
+        'โครงงานนี้พัฒนาระบบจองห้องพักที่ให้ลูกค้าสแกนคิวอาร์โค้ดเพื่อดูห้องว่างและจองได้ทันที ลดขั้นตอนการทำงานของพนักงานต้อนรับ',
+        'This project develops a booking system allowing customers to scan a QR code to view availability and book instantly.'),
+      R(7,1,'การบัญชี',2568,2567,'การพัฒนาบทเรียนออนไลน์วิชาการบัญชีเบื้องต้น','Development of an Online Lesson for Introductory Accounting',
+        [{name:'นายประเสริฐ ชัยมงคล',role:'ผู้วิจัยหลัก'}],
+        ['บทเรียนออนไลน์','การบัญชี','สื่อการสอน'],'รอตรวจสอบ',
+        'งานวิจัยนี้พัฒนาบทเรียนออนไลน์วิชาการบัญชีเบื้องต้นเพื่อส่งเสริมการเรียนรู้ด้วยตนเองของผู้เรียน ผลสัมฤทธิ์ทางการเรียนของกลุ่มทดลองสูงกว่ากลุ่มควบคุมอย่างมีนัยสำคัญ',
+        'This research develops an online lesson for introductory accounting to promote self-directed learning.'),
+      R(8,3,'เทคโนโลยีสารสนเทศ',2567,2566,'หุ่นยนต์รดน้ำต้นไม้อัตโนมัติควบคุมผ่านมือถือ','Automatic Plant Watering Robot Controlled via Mobile',
+        [{name:'นายพงศธร แก้วมณี',role:'ผู้วิจัยหลัก'},{name:'นางสาวสุดารัตน์ นามวงศ์',role:'ผู้วิจัยร่วม'}],
+        ['หุ่นยนต์','ไอโอที','รดน้ำอัตโนมัติ'],'เผยแพร่',
+        'สิ่งประดิษฐ์นี้พัฒนาหุ่นยนต์รดน้ำต้นไม้ที่ควบคุมผ่านแอปพลิเคชันบนมือถือ พร้อมเซนเซอร์วัดความชื้นในดินเพื่อรดน้ำตามความต้องการจริงของพืช',
+        'This innovation develops a plant-watering robot controlled via a mobile app with soil moisture sensors.'),
+      R(9,4,'อาหารและโภชนาการ',2567,2566,'บรรจุภัณฑ์ย่อยสลายได้จากเปลือกข้าวโพด','Biodegradable Packaging from Corn Husk',
+        [{name:'นางสาวนภัสสร ปัญญา',role:'ผู้วิจัยหลัก'}],
+        ['บรรจุภัณฑ์','ย่อยสลายได้','เปลือกข้าวโพด','สิ่งแวดล้อม'],'เผยแพร่',
+        'โครงงานวิทยาศาสตร์นี้พัฒนาบรรจุภัณฑ์ย่อยสลายได้จากเปลือกข้าวโพดเหลือทิ้ง เพื่อทดแทนพลาสติกและเพิ่มมูลค่าวัสดุเหลือใช้ทางการเกษตร',
+        'This science project develops biodegradable packaging from waste corn husk to replace plastic.'),
+      R(10,2,'การบัญชี',2568,2567,'การจัดทำบัญชีครัวเรือนตามหลักปรัชญาเศรษฐกิจพอเพียง','Household Accounting Based on the Sufficiency Economy Philosophy',
+        [{name:'นายสหรัฐ พันธ์ดี',role:'ผู้วิจัยหลัก'},{name:'นางสาวปวีณา ศรีสุข',role:'ผู้วิจัยร่วม'}],
+        ['บัญชีครัวเรือน','เศรษฐกิจพอเพียง'],'แบบร่าง',
+        'โครงงานนี้ส่งเสริมการจัดทำบัญชีครัวเรือนในชุมชนตามหลักปรัชญาเศรษฐกิจพอเพียง เพื่อสร้างวินัยทางการเงินและลดหนี้สินของครัวเรือน',
+        'This project promotes household accounting in the community based on the Sufficiency Economy Philosophy.'),
+      R(11,2,'คอมพิวเตอร์ธุรกิจ',2568,2567,'เว็บไซต์ประชาสัมพันธ์แหล่งท่องเที่ยวจังหวัดร้อยเอ็ด','Website for Promoting Tourist Attractions in Roi Et',
+        [{name:'นางสาวชลธิชา มาลี',role:'ผู้วิจัยหลัก'},{name:'นายรัชชานนท์ ทองคำ',role:'ผู้วิจัยร่วม'}],
+        ['เว็บไซต์','การท่องเที่ยว','ร้อยเอ็ด'],'ไม่เผยแพร่',
+        'โครงงานนี้พัฒนาเว็บไซต์ประชาสัมพันธ์แหล่งท่องเที่ยวในจังหวัดร้อยเอ็ด รวบรวมข้อมูลสถานที่ กิจกรรม และเส้นทางการเดินทาง',
+        'This project develops a website to promote tourist attractions in Roi Et province.'),
+      R(12,4,'อาหารและโภชนาการ',2567,2566,'ขนมไทยประยุกต์จากแป้งข้าวหอมมะลิทุ่งกุลาร้องไห้','Applied Thai Desserts from Thung Kula Rong Hai Jasmine Rice Flour',
+        [{name:'นางสาวอาทิตยา ศรีมาตย์',role:'ผู้วิจัยหลัก'}],
+        ['ขนมไทย','ข้าวหอมมะลิ','ทุ่งกุลาร้องไห้'],'เผยแพร่',
+        'โครงงานวิทยาศาสตร์นี้ศึกษาการนำแป้งข้าวหอมมะลิทุ่งกุลาร้องไห้มาประยุกต์ทำขนมไทย เพื่อเพิ่มมูลค่าและส่งเสริมอัตลักษณ์ท้องถิ่น',
+        'This science project studies the application of local jasmine rice flour to make Thai desserts.'),
+    ];
+    const users = [
+      {name:'นายสมชาย ใจดี',email:'somchai@rvc.ac.th',role:'ผู้ดูแลระบบ',dept:'งานศูนย์ข้อมูล',count:0},
+      {name:'นางสาวปิยะนุช ศรีวิไล',email:'piyanuch@rvc.ac.th',role:'ครู',dept:'การบัญชี',count:2},
+      {name:'นายอนุชิต ทองมาก',email:'anuchit@rvc.ac.th',role:'ครู',dept:'คอมพิวเตอร์ธุรกิจ',count:3},
+      {name:'นางสาวกมลชนก แสนสุข',email:'kamon@rvc.ac.th',role:'ตัวแทนนักศึกษา',dept:'คอมพิวเตอร์ธุรกิจ',count:1},
+      {name:'นายธีรภัทร โพธิ์ศรี',email:'teerapat@rvc.ac.th',role:'ตัวแทนนักศึกษา',dept:'คอมพิวเตอร์ธุรกิจ',count:1},
+    ];
+    this.state = {
+      theme:'system', sysDark:false,
+      section:'public', publicView:'home', adminView:'dashboard',
+      selectedId:1, sidebar:false,
+      categories:cats, research, users,
+      q:'', fCat:'', fDept:'', fYear:'', sort:'new',
+      mq:'', mStatus:'',
+      catDraft:'', editingCat:null,
+      kwDraft:'',
+      form:this.blankForm(),
+      toast:null, nextId:100,
+    };
+    this._toastT=null;
+  }
+  blankForm(){
+    return { titleTh:'',titleEn:'',catId:'',dept:'',academicYear:'2568',pubYear:'2568',
+      abstractTh:'',abstractEn:'',keywords:[],status:'แบบร่าง',
+      authors:[{name:'',role:'ผู้วิจัยหลัก'}],
+      chapters:CHAPTER_NAMES.map(n=>({name:n,uploaded:false})) };
+  }
+  componentDidMount(){
+    try{ const m=window.matchMedia('(prefers-color-scheme: dark)');
+      this.setState({sysDark:m.matches});
+      this._mql=m; this._onMql=e=>this.setState({sysDark:e.matches});
+      m.addEventListener('change',this._onMql);
+    }catch(e){}
+  }
+  componentWillUnmount(){ if(this._mql&&this._onMql) this._mql.removeEventListener('change',this._onMql); }
+  get resolved(){ return this.state.theme==='system' ? (this.state.sysDark?'dark':'light') : this.state.theme; }
+  showToast(msg){ clearTimeout(this._toastT); this.setState({toast:msg}); this._toastT=setTimeout(()=>this.setState({toast:null}),2600); }
+
+  catById(id){ return this.state.categories.find(c=>c.id===Number(id)); }
+  catName(id){ const c=this.catById(id); return c?c.name:'—'; }
+  catColor(id){ const i=this.state.categories.findIndex(c=>c.id===Number(id)); return CAT_COLORS[(i<0?0:i)%CAT_COLORS.length]; }
+  statusMeta(s){
+    const m={'เผยแพร่':['var(--ok-soft)','var(--ok)'],'รอตรวจสอบ':['var(--warn-soft)','var(--warn)'],'แบบร่าง':['var(--surface-3)','var(--muted)'],'ไม่เผยแพร่':['var(--danger-soft)','var(--danger)']};
+    return m[s]||m['แบบร่าง'];
+  }
+  decorate(r){
+    const [sb,sf]=this.statusMeta(r.status);
+    const lead=r.authors[0]?r.authors[0].name:'';
+    return {...r, catName:this.catName(r.catId), color:this.catColor(r.catId),
+      statusBg:sb, statusFg:sf,
+      leadAuthor:lead, authorInitial:initial(lead),
+      authorsLine: r.authors.map(a=>a.name).join(', '),
+      abstractShort:(r.abstractTh||'').slice(0,90)+'…',
+      pubYearShort:String(r.pubYear).slice(-2) };
+  }
+
+  renderVals(){
+    const S=this.state;
+    const published=S.research.filter(r=>r.status==='เผยแพร่');
+    const inputStyle="width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;background:var(--surface-2);color:var(--text);outline:none";
+    const labelStyle="display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:6px";
+    const iconBtn="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:13px;margin-left:5px";
+    const iconBtnDanger="width:32px;height:32px;border-radius:8px;border:1px solid var(--danger-soft);background:var(--danger-soft);color:var(--danger);cursor:pointer;font-size:13px;margin-left:5px";
+    const navBtn=(active)=>`height:38px;padding:0 14px;border-radius:9px;border:none;background:${active?'var(--primary-soft)':'transparent'};color:${active?'var(--primary-text)':'var(--muted)'};font-weight:600;font-size:14px;cursor:pointer`;
+
+    // theme glyph
+    const tg={system:'AUTO',light:'สว่าง',dark:'มืด'}[S.theme];
+
+    // ---- public data ----
+    const decoP = arr=>arr.map(r=>this.decorate(r));
+    const latest = decoP([...published].sort((a,b)=>b.pubYear-a.pubYear||b.id-a.id).slice(0,6));
+
+    // search results
+    const q=S.q.trim().toLowerCase();
+    let results = published.filter(r=>{
+      if(S.fCat && r.catId!==Number(S.fCat)) return false;
+      if(S.fDept && r.dept!==S.fDept) return false;
+      if(S.fYear && String(r.pubYear)!==S.fYear) return false;
+      if(q){ const hay=(r.titleTh+' '+r.titleEn+' '+r.abstractTh+' '+r.authors.map(a=>a.name).join(' ')+' '+r.keywords.join(' ')).toLowerCase(); if(!hay.includes(q)) return false; }
+      return true;
+    });
+    results.sort((a,b)=> S.sort==='old'? a.pubYear-b.pubYear||a.id-b.id : S.sort==='az'? a.titleTh.localeCompare(b.titleTh,'th') : b.pubYear-a.pubYear||b.id-a.id);
+    results = decoP(results);
+
+    // detail
+    const cur = S.research.find(r=>r.id===S.selectedId) || S.research[0];
+    const curDec = {...this.decorate(cur),
+      authors: cur.authors.map(a=>({...a,initial:initial(a.name)})),
+      files: cur.files.map(f=>({name:f.name,
+        open:f.uploaded&&f.open, locked:!(f.uploaded&&f.open),
+        meta: f.uploaded ? (f.open?'PDF · เปิดเผยสาธารณะ':'PDF · เฉพาะภายใน') : 'ยังไม่มีไฟล์',
+        iconBg: f.uploaded&&f.open?'var(--danger-soft)':'var(--surface-3)',
+        iconFg: f.uploaded&&f.open?'var(--danger)':'var(--faint)' }))
+    };
+
+    // stats (public — published)
+    const statCats = S.categories.filter(c=>c.enabled).map(c=>({name:c.name,color:this.catColor(c.id),count:published.filter(r=>r.catId===c.id).length}));
+
+    // ---- admin dashboard ----
+    const totalAll=S.research.length;
+    const dashStats=[
+      {label:'งานวิจัยทั้งหมด',value:totalAll,icon:'≣',bg:'var(--primary-soft)',fg:'var(--primary-text)',delta:'+3 เดือนนี้',deltaColor:'var(--ok)'},
+      {label:'เผยแพร่แล้ว',value:published.length,icon:'✓',bg:'var(--ok-soft)',fg:'var(--ok)',delta:'พร้อมสืบค้น',deltaColor:'var(--muted)'},
+      {label:'รอตรวจสอบ',value:S.research.filter(r=>r.status==='รอตรวจสอบ').length,icon:'⏳',bg:'var(--warn-soft)',fg:'var(--warn)',delta:'ต้องดำเนินการ',deltaColor:'var(--warn)'},
+      {label:'ผู้ใช้งาน',value:S.users.length,icon:'◍',bg:'var(--info-soft)',fg:'var(--info)',delta:'ครูและนักศึกษา',deltaColor:'var(--muted)'},
+    ];
+    const catCounts=S.categories.map(c=>({...c,count:S.research.filter(r=>r.catId===c.id).length,color:this.catColor(c.id)}));
+    const maxCat=Math.max(1,...catCounts.map(c=>c.count));
+    const catBars=catCounts.map(c=>({name:c.name,count:c.count,color:c.color,pct:Math.round(c.count/maxCat*100)+'%'}));
+    const yearsSet=[...new Set(S.research.map(r=>r.pubYear))].sort();
+    const maxYear=Math.max(1,...yearsSet.map(y=>S.research.filter(r=>r.pubYear===y).length));
+    const yearBars=yearsSet.map(y=>{const c=S.research.filter(r=>r.pubYear===y).length;return {year:y,count:c,pct:Math.round(c/maxYear*100)+'%'};});
+    const pending=decoP(S.research.filter(r=>r.status==='รอตรวจสอบ'));
+
+    // manage research
+    const mq=S.mq.trim().toLowerCase();
+    let adminResearch=S.research.filter(r=>{
+      if(S.mStatus && r.status!==S.mStatus) return false;
+      if(mq){ const hay=(r.titleTh+' '+r.authors.map(a=>a.name).join(' ')+' '+r.dept).toLowerCase(); if(!hay.includes(mq)) return false; }
+      return true;
+    });
+    adminResearch=decoP(adminResearch);
+
+    // categories table
+    const catRows=S.categories.map(c=>{
+      const count=S.research.filter(r=>r.catId===c.id).length;
+      const editing=S.editingCat===c.id;
+      return {id:c.id,name:c.name,count,color:this.catColor(c.id),
+        editing, notEditing:!editing,
+        toggleBg:c.enabled?'var(--primary)':'var(--surface-3)',
+        knobLeft:c.enabled?'22px':'3px',
+        statusLabel:c.enabled?'เปิดใช้งาน':'ปิด',
+        statusColor:c.enabled?'var(--ok)':'var(--faint)'};
+    });
+
+    // users
+    const roleMeta={'ผู้ดูแลระบบ':['var(--primary-soft)','var(--primary-text)'],'ครู':['var(--info-soft)','var(--info)'],'ตัวแทนนักศึกษา':['var(--ok-soft)','var(--ok)']};
+    const users=S.users.map(u=>{const [b,f]=roleMeta[u.role]||['var(--surface-3)','var(--muted)'];return {...u,initial:initial(u.name),roleBg:b,roleFg:f};});
+
+    // form derived
+    const chaptersV=S.form.chapters.map((ch,i)=>({i,name:ch.name,uploaded:ch.uploaded,
+      badge:ch.uploaded?'✓':'+', hint:ch.uploaded?'อัปโหลดแล้ว · PDF':'ยังไม่อัปโหลด',
+      badgeBg:ch.uploaded?'var(--ok)':'var(--surface-3)', badgeFg:ch.uploaded?'#fff':'var(--faint)',
+      borderColor:ch.uploaded?'var(--ok)':'var(--border)', rowBg:ch.uploaded?'var(--ok-soft)':'var(--surface-2)'}));
+    const upCount=S.form.chapters.filter(c=>c.uploaded).length;
+    const authorsV=S.form.authors.map((a,i)=>({...a,i}));
+    const keywordsV=S.form.keywords.map((text,i)=>({text,i}));
+
+    const adminTitles={dashboard:'แดชบอร์ด',research:'จัดการงานวิจัย',submit:'นำเข้างานวิจัย',categories:'จัดการประเภทงานวิจัย',users:'จัดการผู้ใช้งาน'};
+
+    return {
+      resolved:this.resolved, themeGlyph:tg,
+      isPublic:S.section==='public', isAdmin:S.section==='admin',
+      isHome:S.publicView==='home', isSearch:S.publicView==='search', isDetail:S.publicView==='detail',
+      navHomeStyle:navBtn(S.publicView==='home'), navSearchStyle:navBtn(S.publicView==='search'||S.publicView==='detail'),
+      inputStyle, labelStyle, iconBtn, iconBtnDanger,
+      q:S.q,
+      // handlers
+      goHome:()=>this.setState({section:'public',publicView:'home'}),
+      goSearch:()=>this.setState({section:'public',publicView:'search'}),
+      goAdmin:()=>this.setState({section:'admin',adminView:'dashboard'}),
+      cycleTheme:()=>{const o=['system','light','dark'];this.setState(s=>({theme:o[(o.indexOf(s.theme)+1)%3]}));},
+      setQuery:e=>this.setState({q:e.target.value}),
+      heroSearchKey:e=>{if(e.key==='Enter')this.setState({section:'public',publicView:'search'});},
+      quickSearch:e=>this.setState({q:e.currentTarget.dataset.q,section:'public',publicView:'search'}),
+      selectResearch:e=>this.setState({selectedId:Number(e.currentTarget.dataset.id),section:'public',publicView:'detail'}),
+      selectResearchAdmin:e=>this.setState({selectedId:Number(e.currentTarget.dataset.id),section:'public',publicView:'detail'}),
+      // public data
+      stats:{total:published.length,cats:statCats},
+      latest, results, noResults:results.length===0,
+      enabledCats:S.categories.filter(c=>c.enabled),
+      depts:DEPTS, years:[2565,2566,2567,2568].filter(y=>S.research.some(r=>r.pubYear===y)),
+      fCat:S.fCat,fDept:S.fDept,fYear:S.fYear,sort:S.sort,
+      setFilterCat:e=>this.setState({fCat:e.target.value}),
+      setFilterDept:e=>this.setState({fDept:e.target.value}),
+      setFilterYear:e=>this.setState({fYear:e.target.value}),
+      setSort:e=>this.setState({sort:e.target.value}),
+      clearFilters:()=>this.setState({fCat:'',fDept:'',fYear:'',q:''}),
+      current:curDec,
+      // admin
+      isAdmDash:S.adminView==='dashboard',isAdmResearch:S.adminView==='research',isAdmCat:S.adminView==='categories',isAdmUsers:S.adminView==='users',isAdmSubmit:S.adminView==='submit',
+      adminTitle:adminTitles[S.adminView],
+      sidebarW:S.sidebar?'68px':'240px',
+      hideCollapsed:S.sidebar?'sc-hidden':'',
+      setAdminView:e=>this.setState({adminView:e.currentTarget.dataset.v}),
+      toggleSidebar:()=>this.setState(s=>({sidebar:!s.sidebar})),
+      navd_dashboard:this.navItem('dashboard'),navd_research:this.navItem('research'),navd_submit:this.navItem('submit'),navd_categories:this.navItem('categories'),navd_users:this.navItem('users'),
+      navd_plain:this.navItem('__none'),
+      dashStats,catBars,yearBars,pending,noPending:pending.length===0,
+      approve:e=>{const id=Number(e.currentTarget.dataset.id);this.setState(s=>({research:s.research.map(r=>r.id===id?{...r,status:'เผยแพร่'}:r)}));this.showToast('อนุมัติเผยแพร่งานวิจัยแล้ว');},
+      // manage research
+      mq:S.mq,mStatus:S.mStatus,
+      setMq:e=>this.setState({mq:e.target.value}),setMStatus:e=>this.setState({mStatus:e.target.value}),
+      adminResearch,noAdminResearch:adminResearch.length===0,
+      cycleStatus:e=>{const id=Number(e.currentTarget.dataset.id);const order=['แบบร่าง','รอตรวจสอบ','เผยแพร่','ไม่เผยแพร่'];this.setState(s=>({research:s.research.map(r=>r.id===id?{...r,status:order[(order.indexOf(r.status)+1)%order.length]}:r)}));},
+      deleteResearch:e=>{const id=Number(e.currentTarget.dataset.id);this.setState(s=>({research:s.research.filter(r=>r.id!==id)}));this.showToast('ลบงานวิจัยแล้ว');},
+      // categories
+      catRows, catDraft:S.catDraft,
+      setCatDraft:e=>this.setState({catDraft:e.target.value}),
+      catDraftKey:e=>{if(e.key==='Enter')this.addCategory();},
+      addCategory:()=>this.addCategory(),
+      toggleCat:e=>{const id=Number(e.currentTarget.dataset.id);this.setState(s=>({categories:s.categories.map(c=>c.id===id?{...c,enabled:!c.enabled}:c)}));},
+      startEditCat:e=>this.setState({editingCat:Number(e.currentTarget.dataset.id)}),
+      editCatName:e=>{const id=Number(e.currentTarget.dataset.id);const v=e.target.value;this.setState(s=>({categories:s.categories.map(c=>c.id===id?{...c,name:v}:c)}));},
+      editCatKey:e=>{if(e.key==='Enter')this.setState({editingCat:null});},
+      deleteCategory:e=>{const id=Number(e.currentTarget.dataset.id);this.setState(s=>({categories:s.categories.filter(c=>c.id!==id)}));this.showToast('ลบประเภทงานวิจัยแล้ว');},
+      // users
+      users, toastSoon:()=>this.showToast('ฟีเจอร์นี้อยู่ระหว่างพัฒนา'),
+      // form
+      form:{...S.form,chapters:chaptersV,authors:authorsV,keywords:keywordsV},
+      uploadedCount:upCount, chapterTotal:S.form.chapters.length, uploadPct:Math.round(upCount/S.form.chapters.length*100)+'%',
+      kwDraft:S.kwDraft, setKwDraft:e=>this.setState({kwDraft:e.target.value}),
+      kwKey:e=>{if(e.key==='Enter'&&e.target.value.trim()){e.preventDefault();const v=e.target.value.trim();this.setState(s=>({form:{...s.form,keywords:[...s.form.keywords,v]},kwDraft:''}));}},
+      removeKeyword:e=>{const i=Number(e.currentTarget.dataset.i);this.setState(s=>({form:{...s.form,keywords:s.form.keywords.filter((_,idx)=>idx!==i)}}));},
+      updateForm:e=>{const f=e.currentTarget.dataset.f;const v=e.target.value;this.setState(s=>({form:{...s.form,[f]:v}}));},
+      addAuthor:()=>this.setState(s=>({form:{...s.form,authors:[...s.form.authors,{name:'',role:'ผู้วิจัยร่วม'}]}})),
+      removeAuthor:e=>{const i=Number(e.currentTarget.dataset.i);this.setState(s=>({form:{...s.form,authors:s.form.authors.filter((_,idx)=>idx!==i)}}));},
+      updateAuthor:e=>{const i=Number(e.currentTarget.dataset.i);const k=e.currentTarget.dataset.k;const v=e.target.value;this.setState(s=>({form:{...s.form,authors:s.form.authors.map((a,idx)=>idx===i?{...a,[k]:v}:a)}}));},
+      toggleChapter:e=>{const i=Number(e.currentTarget.dataset.i);this.setState(s=>({form:{...s.form,chapters:s.form.chapters.map((c,idx)=>idx===i?{...c,uploaded:!c.uploaded}:c)}}));},
+      submitForm:()=>this.submitForm(),
+      resetForm:()=>{this.setState({form:this.blankForm(),kwDraft:''});this.showToast('ล้างฟอร์มแล้ว');},
+      // toast
+      hasToast:!!S.toast, toast:S.toast,
+    };
+  }
+  navItem(key){
+    const active=this.state.adminView===key;
+    return `display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;border-radius:9px;padding:10px 12px;font-size:13.5px;font-weight:${active?'600':'500'};cursor:pointer;background:${active?'var(--primary-soft)':'transparent'};color:${active?'var(--primary-text)':'var(--muted)'};white-space:nowrap;font-family:inherit`;
+  }
+  addCategory(){
+    const name=this.state.catDraft.trim(); if(!name) return;
+    const id=Math.max(0,...this.state.categories.map(c=>c.id))+1;
+    this.setState(s=>({categories:[...s.categories,{id,name,enabled:true}],catDraft:''}));
+    this.showToast('เพิ่มประเภทงานวิจัยแล้ว');
+  }
+  submitForm(){
+    const f=this.state.form;
+    if(!f.titleTh.trim()||!f.catId){ this.showToast('กรุณากรอกชื่อเรื่องและเลือกประเภท'); return; }
+    const id=this.state.nextId;
+    const rec={id,catId:Number(f.catId),dept:f.dept||'—',pubYear:Number(f.pubYear)||2568,academicYear:Number(f.academicYear)||2568,
+      titleTh:f.titleTh,titleEn:f.titleEn||'—',
+      authors:f.authors.filter(a=>a.name.trim()).length?f.authors.filter(a=>a.name.trim()):[{name:'ไม่ระบุ',role:'ผู้วิจัยหลัก'}],
+      keywords:f.keywords,status:f.status,abstractTh:f.abstractTh,abstractEn:f.abstractEn,
+      files:CHAPTER_NAMES.map((n,i)=>({name:n,uploaded:f.chapters[i].uploaded,open:i<2}))};
+    this.setState(s=>({research:[rec,...s.research],nextId:s.nextId+1,form:this.blankForm(),kwDraft:'',adminView:'research'}));
+    this.showToast('บันทึกงานวิจัยเรียบร้อยแล้ว');
+  }
+}
+</script>
+</body>
+</html>

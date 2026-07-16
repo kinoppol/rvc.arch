@@ -1,11 +1,15 @@
 # Front-controller routing for the Research Repository app.
-# App lives at http://localhost/rvc.arch/
+# Path-independent: works whether the project sits in /rvc.arch, /web, a domain
+# root, or any other folder. No RewriteBase — the relative "index.php" target is
+# resolved by Apache relative to THIS folder, so nothing is hardcoded.
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /rvc.arch/
 
-    # Serve real files and directories (assets, uploads via PHP, etc.) directly.
+    # Block direct web access to application internals (relative to this folder).
+    RewriteRule ^(app|config|sql|views|storage)(/|$) - [F,L]
+
+    # Serve real files and directories (assets, etc.) directly.
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
@@ -14,10 +18,7 @@
     RewriteRule ^ index.php [QSA,L]
 </IfModule>
 
-# Block direct web access to app internals.
+# Extra guard for sensitive file types (path-independent).
 <FilesMatch "\.(sql|md)$">
     Require all denied
 </FilesMatch>
-
-RedirectMatch 403 ^/rvc\.arch/(config|app|sql|views)(/.*)?$
-RedirectMatch 403 ^/rvc\.arch/storage/uploads(/.*)?$

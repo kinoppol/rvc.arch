@@ -47,10 +47,20 @@ $settings = [
       <div style="font-weight:700;font-size:16px"><?= h($title) ?></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
         <button data-action="cycle-theme" title="สลับโหมด" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:11.5px;font-weight:600"><span data-theme-glyph>AUTO</span></button>
-        <div style="display:flex;align-items:center;gap:9px;padding-left:6px">
-          <div data-collapse-hide style="text-align:right;line-height:1.2"><div style="font-size:13px;font-weight:600"><?= h($user['name']) ?></div><div style="font-size:11px;color:var(--muted)"><?= h($user['role']) ?></div></div>
-          <span style="width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600"><?= h(name_initial($user['name'])) ?></span>
-          <form method="post" action="<?= h(url('logout')) ?>" style="margin:0"><?= csrf_field() ?><button type="submit" title="ออกจากระบบ" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:14px">⎋</button></form>
+        <div style="position:relative;padding-left:6px">
+          <button type="button" data-action="toggle-user-menu" style="display:flex;align-items:center;gap:9px;padding:4px 8px 4px 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);cursor:pointer">
+            <span data-collapse-hide style="text-align:right;line-height:1.2"><span style="display:block;font-size:13px;font-weight:600"><?= h($user['name']) ?></span><span style="display:block;font-size:11px;color:var(--muted)"><?= h($user['role']) ?></span></span>
+            <span style="width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600;flex:none"><?= h(name_initial($user['name'])) ?></span>
+            <span style="font-size:10px;color:var(--muted)">▾</span>
+          </button>
+          <div data-user-menu class="sc-hidden" style="position:absolute;right:0;top:calc(100% + 8px);width:234px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);overflow:hidden;z-index:50">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--border-2)">
+              <div style="font-size:13.5px;font-weight:600"><?= h($user['name']) ?></div>
+              <div style="font-size:11.5px;color:var(--muted);word-break:break-all"><?= h($user['email']) ?></div>
+            </div>
+            <a href="<?= h(url('admin/account')) ?>" class="menu-item" style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;color:var(--text);text-decoration:none"><span style="width:18px;text-align:center">🔑</span>เปลี่ยนรหัสผ่าน</a>
+            <form method="post" action="<?= h(url('logout')) ?>" style="margin:0;border-top:1px solid var(--border-2)"><?= csrf_field() ?><button type="submit" class="menu-item" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;color:var(--danger);background:none;border:none;cursor:pointer;text-align:left;font-weight:500"><span style="width:18px;text-align:center">⎋</span>ออกจากระบบ</button></form>
+          </div>
         </div>
       </div>
     </header>

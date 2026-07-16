@@ -301,4 +301,38 @@ final class AdminController
         flash('ระงับบัญชีผู้ใช้แล้ว');
         redirect('admin/users');
     }
+
+    /* ---------------- My account ---------------- */
+
+    public function account(): void
+    {
+        App::render('admin/account', [], $this->layoutVars('account', 'บัญชีของฉัน'));
+    }
+
+    public function changePassword(): void
+    {
+        verify_csrf();
+        $uid     = (int) (Auth::user()['id'] ?? 0);
+        $current = (string) ($_POST['current'] ?? '');
+        $new     = (string) ($_POST['new'] ?? '');
+        $confirm = (string) ($_POST['confirm'] ?? '');
+
+        $user = $this->repo->findUserById($uid);
+        if (!$user || !password_verify($current, $user['password_hash'])) {
+            flash('รหัสผ่านปัจจุบันไม่ถูกต้อง', 'error');
+            redirect('admin/account');
+        }
+        if (strlen($new) < 6) {
+            flash('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
+            redirect('admin/account');
+        }
+        if ($new !== $confirm) {
+            flash('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', 'error');
+            redirect('admin/account');
+        }
+
+        $this->repo->updatePassword($uid, $new);
+        flash('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+        redirect('admin/account');
+    }
 }

@@ -494,6 +494,19 @@ final class Repository
         $this->db()->prepare('UPDATE users SET status = ? WHERE id = ?')->execute([$status, $id]);
     }
 
+    public function findUserById(int $id): ?array
+    {
+        $stmt = $this->db()->prepare('SELECT * FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function updatePassword(int $id, string $newPassword): void
+    {
+        $this->db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+            ->execute([password_hash($newPassword, PASSWORD_DEFAULT), $id]);
+    }
+
     /* =====================================================
      *  Settings (key/value)
      * ===================================================== */

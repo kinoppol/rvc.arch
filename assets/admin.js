@@ -23,6 +23,26 @@
     applySidebar();
   });
 
+  /* ---- avatar dropdown menu ---- */
+  document.addEventListener('click', function (e) {
+    var menu = document.querySelector('[data-user-menu]');
+    if (!menu) return;
+    if (e.target.closest('[data-action="toggle-user-menu"]')) {
+      menu.classList.toggle('sc-hidden');
+      e.stopPropagation();
+      return;
+    }
+    if (!e.target.closest('[data-user-menu]')) {
+      menu.classList.add('sc-hidden');
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var menu = document.querySelector('[data-user-menu]');
+      if (menu) menu.classList.add('sc-hidden');
+    }
+  });
+
   /* ---- keyword chips ---- */
   function initKeywords() {
     var box = document.querySelector('[data-keywords]');

@@ -66,6 +66,8 @@ $routes = [
     ['POST', 'admin/categories/{id}/rename', [AdminController::class, 'renameCategory'],   true],
     ['POST', 'admin/categories/{id}/toggle', [AdminController::class, 'toggleCategory'],   true],
     ['POST', 'admin/categories/{id}/delete', [AdminController::class, 'deleteCategory'],   true],
+    ['GET',  'admin/account',                 [AdminController::class, 'account'],          true],
+    ['POST', 'admin/account/password',        [AdminController::class, 'changePassword'],   true],
     ['GET',  'admin/users',                   [AdminController::class, 'users'],            true],
     ['POST', 'admin/users',                   [AdminController::class, 'addUser'],          true],
     ['POST', 'admin/users/settings',          [AdminController::class, 'updateSettings'],   true],

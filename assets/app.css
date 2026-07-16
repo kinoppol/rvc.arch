@@ -44,6 +44,10 @@ input,select,textarea,button { font-family:inherit; }
 @keyframes toastIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
 @keyframes fade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
+/* dropdown menu items (avatar menu) */
+.menu-item { transition: background .12s; }
+.menu-item:hover { background: var(--surface-2); }
+
 /* card hover used on home/search lists (design used style-hover) */
 .card-hover { transition:transform .12s, box-shadow .12s, border-color .12s; }
 .card-lift:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }

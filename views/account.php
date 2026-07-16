@@ -14,7 +14,7 @@ $labelStyle = 'display:block;font-size:12.5px;font-weight:600;color:var(--muted)
   </div>
 
   <!-- change password -->
-  <form method="post" action="<?= h(url('admin/account/password')) ?>" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
+  <form method="post" action="<?= h(url('account/password')) ?>" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
     <?= csrf_field() ?>
     <div style="font-weight:700;font-size:15px;margin-bottom:16px">เปลี่ยนรหัสผ่าน</div>
 

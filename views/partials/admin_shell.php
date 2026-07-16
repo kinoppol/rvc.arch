@@ -58,7 +58,7 @@ $settings = [
               <div style="font-size:13.5px;font-weight:600"><?= h($user['name']) ?></div>
               <div style="font-size:11.5px;color:var(--muted);word-break:break-all"><?= h($user['email']) ?></div>
             </div>
-            <a href="<?= h(url('admin/account')) ?>" class="menu-item" style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;color:var(--text);text-decoration:none"><span style="width:18px;text-align:center">🔑</span>เปลี่ยนรหัสผ่าน</a>
+            <a href="<?= h(url('account')) ?>" class="menu-item" style="display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;color:var(--text);text-decoration:none"><span style="width:18px;text-align:center">🔑</span>เปลี่ยนรหัสผ่าน</a>
             <form method="post" action="<?= h(url('logout')) ?>" style="margin:0;border-top:1px solid var(--border-2)"><?= csrf_field() ?><button type="submit" class="menu-item" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13.5px;color:var(--danger);background:none;border:none;cursor:pointer;text-align:left;font-weight:500"><span style="width:18px;text-align:center">⎋</span>ออกจากระบบ</button></form>
           </div>
         </div>

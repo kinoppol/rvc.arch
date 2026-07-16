@@ -205,6 +205,17 @@ final class Repository
         return $this->manageList('', 'รอตรวจสอบ');
     }
 
+    /** All research created by a given user (any status), newest first. */
+    public function researchByUser(int $userId): array
+    {
+        $map = $this->categoryColorMap();
+        $stmt = $this->db()->prepare(
+            $this->baseSelect() . ' WHERE r.created_by = ? ORDER BY r.updated_at DESC, r.id DESC'
+        );
+        $stmt->execute([$userId]);
+        return array_map(fn ($r) => $this->decorate($r, $map), $stmt->fetchAll());
+    }
+
     public function authors(int $researchId): array
     {
         $stmt = $this->db()->prepare(

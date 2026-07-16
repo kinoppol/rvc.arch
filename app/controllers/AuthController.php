@@ -19,7 +19,7 @@ final class AuthController
     public function showLogin(): void
     {
         if (Auth::check()) {
-            redirect('admin');
+            redirect(Auth::homeUrl());
         }
         App::render('auth/login', ['email' => ''], [
             'section' => 'auth', 'title' => 'เข้าสู่ระบบ', 'bare' => true,
@@ -42,7 +42,7 @@ final class AuthController
                 header('Location: ' . $intended);
                 exit;
             }
-            redirect('admin');
+            redirect(Auth::homeUrl());
         }
 
         flash(match ($result) {
@@ -69,7 +69,7 @@ final class AuthController
     public function showRegister(): void
     {
         if (Auth::check()) {
-            redirect('admin');
+            redirect(Auth::homeUrl());
         }
         App::render('auth/register', [
             'old'   => ['name' => '', 'email' => '', 'role' => 'ครู', 'dept' => ''],

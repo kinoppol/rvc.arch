@@ -61,13 +61,16 @@ final class PublicController
             ]);
             return;
         }
-        // Public visitors only see published records.
-        if ($research['status'] !== 'เผยแพร่' && !Auth::check()) {
-            http_response_code(404);
-            App::render('public/not_found', [], [
-                'section' => 'public', 'publicView' => 'search', 'title' => 'ไม่พบงานวิจัย',
-            ]);
-            return;
+        // Unpublished records are visible only to an admin or the owner.
+        if ($research['status'] !== 'เผยแพร่') {
+            $isOwner = Auth::check() && (int) ($research['created_by'] ?? 0) === (int) (Auth::user()['id'] ?? -1);
+            if (!Auth::isAdmin() && !$isOwner) {
+                http_response_code(404);
+                App::render('public/not_found', [], [
+                    'section' => 'public', 'publicView' => 'search', 'title' => 'ไม่พบงานวิจัย',
+                ]);
+                return;
+            }
         }
         App::render('public/detail', [
             'current' => $research,
@@ -86,10 +89,14 @@ final class PublicController
             http_response_code(404);
             exit('ไม่พบไฟล์');
         }
-        // Locked files require an authenticated admin.
-        if (!$file['is_public'] && !Auth::check()) {
-            http_response_code(403);
-            exit('ไฟล์นี้ไม่เปิดเผยต่อสาธารณะ');
+        // Locked files: only an admin or the research owner may download.
+        if (!$file['is_public']) {
+            $research = $this->repo->find((int) $file['research_id']);
+            $isOwner = Auth::check() && (int) ($research['created_by'] ?? 0) === (int) (Auth::user()['id'] ?? -1);
+            if (!Auth::isAdmin() && !$isOwner) {
+                http_response_code(403);
+                exit('ไฟล์นี้ไม่เปิดเผยต่อสาธารณะ');
+            }
         }
 
         $path = App::config('app')['upload_dir'] . '/' . $file['stored_name'];

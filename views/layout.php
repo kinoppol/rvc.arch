@@ -3,6 +3,7 @@
 $section    = $section    ?? 'public';
 $publicView = $publicView ?? 'home';
 $adminView  = $adminView  ?? 'dashboard';
+$memberView = $memberView ?? 'home';
 $title      = $title      ?? '';
 $bare       = $bare       ?? false;
 $app        = App::config('app');
@@ -28,6 +29,12 @@ $flashes    = take_flash();
         'content'   => $content,
         'adminView' => $adminView,
         'title'     => $title,
+    ]) ?>
+<?php elseif ($section === 'member'): ?>
+    <?= App::partial('partials/member_shell', [
+        'content'    => $content,
+        'memberView' => $memberView,
+        'title'      => $title,
     ]) ?>
 <?php else: ?>
     <?= App::partial('partials/public_header', ['publicView' => $publicView]) ?>

@@ -55,13 +55,34 @@ final class Auth
         return isset($_SESSION['user']);
     }
 
+    public static function isAdmin(): bool
+    {
+        return (self::user()['role'] ?? '') === 'ผู้ดูแลระบบ';
+    }
+
+    /** Landing route for the current user after login. */
+    public static function homeUrl(): string
+    {
+        return self::isAdmin() ? 'admin' : 'my';
+    }
+
     /** Redirect guests to the login page. */
     public static function requireLogin(): void
     {
         if (!self::check()) {
             $_SESSION['_intended'] = $_SERVER['REQUEST_URI'] ?? '';
-            flash('กรุณาเข้าสู่ระบบก่อนเข้าใช้งานส่วนผู้ดูแล', 'error');
+            flash('กรุณาเข้าสู่ระบบก่อนเข้าใช้งาน', 'error');
             redirect('login');
+        }
+    }
+
+    /** Require the admin role; members are sent to their own area. */
+    public static function requireAdmin(): void
+    {
+        self::requireLogin();
+        if (!self::isAdmin()) {
+            flash('เฉพาะผู้ดูแลระบบเท่านั้นที่เข้าถึงส่วนนี้ได้', 'error');
+            redirect('my');
         }
     }
 }

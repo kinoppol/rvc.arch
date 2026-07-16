@@ -24,7 +24,7 @@ $onSearch = in_array($publicView, ['search', 'detail'], true);
     <div style="display:flex;gap:8px;align-items:center">
       <button data-action="cycle-theme" title="สลับโหมดแสดงผล" style="width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:12px;font-weight:600"><span data-theme-glyph>AUTO</span></button>
       <?php if (Auth::check()): ?>
-        <a href="<?= h(url('admin')) ?>" style="height:38px;padding:0 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer;display:grid;place-items:center;text-decoration:none">ผู้ดูแลระบบ</a>
+        <a href="<?= h(url(Auth::homeUrl())) ?>" style="height:38px;padding:0 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer;display:grid;place-items:center;text-decoration:none"><?= Auth::isAdmin() ? 'ผู้ดูแลระบบ' : 'พื้นที่ของฉัน' ?></a>
       <?php else: ?>
         <a href="<?= h(url('register')) ?>" style="height:38px;padding:0 14px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-weight:600;font-size:13.5px;cursor:pointer;display:grid;place-items:center;text-decoration:none">สมัครสมาชิก</a>
         <a href="<?= h(url('login')) ?>" style="height:38px;padding:0 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer;display:grid;place-items:center;text-decoration:none">เข้าสู่ระบบ</a>

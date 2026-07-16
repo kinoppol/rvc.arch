@@ -21,8 +21,11 @@ require __DIR__ . '/app/Database.php';
 require __DIR__ . '/app/Auth.php';
 require __DIR__ . '/app/Repository.php';
 require __DIR__ . '/app/helpers.php';
+require __DIR__ . '/app/ResearchFormTrait.php';
 require __DIR__ . '/app/controllers/PublicController.php';
 require __DIR__ . '/app/controllers/AuthController.php';
+require __DIR__ . '/app/controllers/AccountController.php';
+require __DIR__ . '/app/controllers/MemberController.php';
 require __DIR__ . '/app/controllers/AdminController.php';
 
 App::boot();
@@ -37,7 +40,8 @@ $path   = trim(rawurldecode($uri), '/');
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 /*
- * Route table: [method, pattern, [Controller, action], adminOnly?]
+ * Route table: [method, pattern, [Controller, action], access?]
+ * access: absent = public, 'login' = any signed-in user, 'admin' = admin role.
  * {id} in a pattern captures a numeric segment.
  */
 $routes = [
@@ -52,32 +56,43 @@ $routes = [
     ['GET',  'register',                       [AuthController::class, 'showRegister']],
     ['POST', 'register',                       [AuthController::class, 'register']],
 
-    ['GET',  'admin',                         [AdminController::class, 'dashboard'],       true],
-    ['GET',  'admin/research',                [AdminController::class, 'research'],         true],
-    ['POST', 'admin/research/{id}/approve',   [AdminController::class, 'approve'],          true],
-    ['POST', 'admin/research/{id}/status',    [AdminController::class, 'cycleStatus'],      true],
-    ['POST', 'admin/research/{id}/delete',    [AdminController::class, 'deleteResearch'],   true],
-    ['GET',  'admin/submit',                  [AdminController::class, 'submitForm'],       true],
-    ['POST', 'admin/submit',                  [AdminController::class, 'submit'],           true],
-    ['GET',  'admin/research/{id}/edit',      [AdminController::class, 'submitForm'],       true],
-    ['POST', 'admin/research/{id}/edit',      [AdminController::class, 'submit'],           true],
-    ['GET',  'admin/categories',             [AdminController::class, 'categories'],       true],
-    ['POST', 'admin/categories',             [AdminController::class, 'addCategory'],      true],
-    ['POST', 'admin/categories/{id}/rename', [AdminController::class, 'renameCategory'],   true],
-    ['POST', 'admin/categories/{id}/toggle', [AdminController::class, 'toggleCategory'],   true],
-    ['POST', 'admin/categories/{id}/delete', [AdminController::class, 'deleteCategory'],   true],
-    ['GET',  'admin/account',                 [AdminController::class, 'account'],          true],
-    ['POST', 'admin/account/password',        [AdminController::class, 'changePassword'],   true],
-    ['GET',  'admin/users',                   [AdminController::class, 'users'],            true],
-    ['POST', 'admin/users',                   [AdminController::class, 'addUser'],          true],
-    ['POST', 'admin/users/settings',          [AdminController::class, 'updateSettings'],   true],
-    ['POST', 'admin/users/{id}/approve',      [AdminController::class, 'approveUser'],       true],
-    ['POST', 'admin/users/{id}/suspend',      [AdminController::class, 'suspendUser'],       true],
+    // shared "my account" (any signed-in user)
+    ['GET',  'account',                        [AccountController::class, 'show'],           'login'],
+    ['POST', 'account/password',               [AccountController::class, 'changePassword'], 'login'],
+
+    // member area (teachers/students) — own research only
+    ['GET',  'my',                             [MemberController::class, 'dashboard'],       'login'],
+    ['GET',  'my/submit',                       [MemberController::class, 'submitForm'],      'login'],
+    ['POST', 'my/submit',                       [MemberController::class, 'submit'],          'login'],
+    ['GET',  'my/research/{id}/edit',           [MemberController::class, 'submitForm'],      'login'],
+    ['POST', 'my/research/{id}/edit',           [MemberController::class, 'submit'],          'login'],
+    ['POST', 'my/research/{id}/delete',         [MemberController::class, 'deleteResearch'],  'login'],
+
+    // admin area — admin role only
+    ['GET',  'admin',                         [AdminController::class, 'dashboard'],       'admin'],
+    ['GET',  'admin/research',                [AdminController::class, 'research'],         'admin'],
+    ['POST', 'admin/research/{id}/approve',   [AdminController::class, 'approve'],          'admin'],
+    ['POST', 'admin/research/{id}/status',    [AdminController::class, 'cycleStatus'],      'admin'],
+    ['POST', 'admin/research/{id}/delete',    [AdminController::class, 'deleteResearch'],   'admin'],
+    ['GET',  'admin/submit',                  [AdminController::class, 'submitForm'],       'admin'],
+    ['POST', 'admin/submit',                  [AdminController::class, 'submit'],           'admin'],
+    ['GET',  'admin/research/{id}/edit',      [AdminController::class, 'submitForm'],       'admin'],
+    ['POST', 'admin/research/{id}/edit',      [AdminController::class, 'submit'],           'admin'],
+    ['GET',  'admin/categories',             [AdminController::class, 'categories'],       'admin'],
+    ['POST', 'admin/categories',             [AdminController::class, 'addCategory'],      'admin'],
+    ['POST', 'admin/categories/{id}/rename', [AdminController::class, 'renameCategory'],   'admin'],
+    ['POST', 'admin/categories/{id}/toggle', [AdminController::class, 'toggleCategory'],   'admin'],
+    ['POST', 'admin/categories/{id}/delete', [AdminController::class, 'deleteCategory'],   'admin'],
+    ['GET',  'admin/users',                   [AdminController::class, 'users'],            'admin'],
+    ['POST', 'admin/users',                   [AdminController::class, 'addUser'],          'admin'],
+    ['POST', 'admin/users/settings',          [AdminController::class, 'updateSettings'],   'admin'],
+    ['POST', 'admin/users/{id}/approve',      [AdminController::class, 'approveUser'],       'admin'],
+    ['POST', 'admin/users/{id}/suspend',      [AdminController::class, 'suspendUser'],       'admin'],
 ];
 
 foreach ($routes as $route) {
     [$rMethod, $pattern, $handler] = $route;
-    $adminOnly = $route[3] ?? false;
+    $access = $route[3] ?? null;
 
     if ($rMethod !== $method) {
         continue;
@@ -87,7 +102,9 @@ foreach ($routes as $route) {
         continue;
     }
 
-    if ($adminOnly) {
+    if ($access === 'admin') {
+        Auth::requireAdmin();
+    } elseif ($access === 'login') {
         Auth::requireLogin();
     }
 

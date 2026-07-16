@@ -2,10 +2,12 @@
 declare(strict_types=1);
 
 /**
- * Admin area — requires an authenticated user (enforced in the router).
+ * Admin area — requires the admin role (enforced in the router).
  */
 final class AdminController
 {
+    use ResearchFormTrait;
+
     private Repository $repo;
 
     public function __construct()
@@ -96,11 +98,13 @@ final class AdminController
                 redirect('admin/research');
             }
         }
-        App::render('admin/submit', [
+        App::render('submit', [
             'editing'     => $editing,
             'enabledCats' => $this->repo->categories(true),
             'depts'       => App::DEPTS,
             'chapters'    => App::CHAPTER_NAMES,
+            'area'        => 'admin',
+            'statuses'    => App::STATUSES,
         ], $this->layoutVars('submit', $editing ? 'แก้ไขงานวิจัย' : 'นำเข้างานวิจัย'));
     }
 
@@ -109,87 +113,12 @@ final class AdminController
         verify_csrf();
         $id = !empty($p['id']) ? (int) $p['id'] : null;
 
-        $titleTh = trim((string) ($_POST['title_th'] ?? ''));
-        $catId = (string) ($_POST['category_id'] ?? '');
-        if ($titleTh === '' || $catId === '') {
-            flash('กรุณากรอกชื่อเรื่องและเลือกประเภทงานวิจัย', 'error');
-            redirect_back(url('admin/submit'));
-        }
-
-        $authorsNames = $_POST['author_name'] ?? [];
-        $authorsRoles = $_POST['author_role'] ?? [];
-        $authors = [];
-        foreach ((array) $authorsNames as $i => $name) {
-            $authors[] = ['name' => trim((string) $name), 'role' => (string) ($authorsRoles[$i] ?? 'ผู้วิจัยร่วม')];
-        }
-        if (!array_filter($authors, fn ($a) => $a['name'] !== '')) {
-            $authors = [['name' => 'ไม่ระบุ', 'role' => 'ผู้วิจัยหลัก']];
-        }
-
-        $keywords = array_values(array_filter(
-            array_map('trim', (array) ($_POST['keywords'] ?? [])),
-            fn ($k) => $k !== ''
-        ));
-
-        $data = [
-            'category_id'   => (int) $catId,
-            'dept'          => trim((string) ($_POST['dept'] ?? '')) ?: null,
-            'title_th'      => $titleTh,
-            'title_en'      => trim((string) ($_POST['title_en'] ?? '')) ?: null,
-            'abstract_th'   => trim((string) ($_POST['abstract_th'] ?? '')),
-            'abstract_en'   => trim((string) ($_POST['abstract_en'] ?? '')),
-            'pub_year'      => (int) ($_POST['pub_year'] ?? 0) ?: null,
-            'academic_year' => (int) ($_POST['academic_year'] ?? 0) ?: null,
-            'status'        => in_array($_POST['status'] ?? '', App::STATUSES, true) ? $_POST['status'] : 'แบบร่าง',
-            'authors'       => $authors,
-            'keywords'      => $keywords,
-            'created_by'    => Auth::user()['id'] ?? null,
-        ];
-
+        $data = $this->buildResearchData(App::STATUSES, 'แบบร่าง', 'admin/submit');
         $newId = $this->repo->save($data, $id);
-        $this->handleUploads($newId);
+        $this->storeUploads($newId);
 
         flash($id ? 'บันทึกการแก้ไขงานวิจัยแล้ว' : 'บันทึกงานวิจัยเรียบร้อยแล้ว');
         redirect('admin/research');
-    }
-
-    /** Store uploaded chapter PDFs and their public/locked flags. */
-    private function handleUploads(int $researchId): void
-    {
-        $this->repo->ensureChapterRows($researchId);
-        $uploadDir = App::config('app')['upload_dir'];
-        $maxBytes = App::config('app')['max_upload_bytes'];
-        $publicFlags = (array) ($_POST['chapter_public'] ?? []);
-
-        foreach (App::CHAPTER_NAMES as $idx => $name) {
-            $this->repo->setFilePublic($researchId, $idx, isset($publicFlags[$idx]));
-
-            if (empty($_FILES['chapter']['name'][$idx])) {
-                continue;
-            }
-            if (($_FILES['chapter']['error'][$idx] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                continue;
-            }
-            $tmp = $_FILES['chapter']['tmp_name'][$idx];
-            $size = (int) $_FILES['chapter']['size'][$idx];
-            $orig = (string) $_FILES['chapter']['name'][$idx];
-
-            if ($size > $maxBytes) {
-                flash("ไฟล์ \"{$orig}\" มีขนาดเกินกำหนด", 'error');
-                continue;
-            }
-            $ext = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-            $mime = function_exists('mime_content_type') ? mime_content_type($tmp) : 'application/pdf';
-            if ($ext !== 'pdf' || ($mime && stripos($mime, 'pdf') === false)) {
-                flash("รองรับเฉพาะไฟล์ PDF (\"{$orig}\")", 'error');
-                continue;
-            }
-
-            $stored = sprintf('r%d_ch%d_%s.pdf', $researchId, $idx, bin2hex(random_bytes(6)));
-            if (move_uploaded_file($tmp, $uploadDir . '/' . $stored)) {
-                $this->repo->setFile($researchId, $idx, $stored, $orig, $size);
-            }
-        }
     }
 
     /* ---------------- Categories ---------------- */
@@ -300,39 +229,5 @@ final class AdminController
         $this->repo->setUserStatus((int) $p['id'], 'suspended');
         flash('ระงับบัญชีผู้ใช้แล้ว');
         redirect('admin/users');
-    }
-
-    /* ---------------- My account ---------------- */
-
-    public function account(): void
-    {
-        App::render('admin/account', [], $this->layoutVars('account', 'บัญชีของฉัน'));
-    }
-
-    public function changePassword(): void
-    {
-        verify_csrf();
-        $uid     = (int) (Auth::user()['id'] ?? 0);
-        $current = (string) ($_POST['current'] ?? '');
-        $new     = (string) ($_POST['new'] ?? '');
-        $confirm = (string) ($_POST['confirm'] ?? '');
-
-        $user = $this->repo->findUserById($uid);
-        if (!$user || !password_verify($current, $user['password_hash'])) {
-            flash('รหัสผ่านปัจจุบันไม่ถูกต้อง', 'error');
-            redirect('admin/account');
-        }
-        if (strlen($new) < 6) {
-            flash('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
-            redirect('admin/account');
-        }
-        if ($new !== $confirm) {
-            flash('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', 'error');
-            redirect('admin/account');
-        }
-
-        $this->repo->updatePassword($uid, $new);
-        flash('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
-        redirect('admin/account');
     }
 }

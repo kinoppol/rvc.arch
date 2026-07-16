@@ -1,5 +1,8 @@
 <?php
-/** @var ?array $editing @var array $enabledCats @var array $depts @var array $chapters */
+/** @var ?array $editing @var array $enabledCats @var array $depts @var array $chapters
+ *  @var string $area  'admin' | 'my'    @var array $statuses */
+$area = $area ?? 'admin';
+$statuses = $statuses ?? App::STATUSES;
 $inputStyle = 'width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;background:var(--surface-2);color:var(--text);outline:none';
 $labelStyle = 'display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:6px';
 $iconBtnDanger = 'width:32px;height:32px;border-radius:8px;border:1px solid var(--danger-soft);background:var(--danger-soft);color:var(--danger);cursor:pointer;font-size:13px';
@@ -11,11 +14,15 @@ $keywords = $e['keywords'] ?? [];
 $files = $e['files'] ?? [];
 $fileByIdx = [];
 foreach ($files as $f) { $fileByIdx[(int) $f['chapter_index']] = $f; }
-$action = $e ? url('admin/research/' . $e['id'] . '/edit') : url('admin/submit');
+$action = $e ? url($area . '/research/' . $e['id'] . '/edit') : url($area . '/submit');
+$cancelUrl = $area === 'admin' ? url('admin/research') : url('my');
 $uploaded = count(array_filter($files, fn ($f) => $f['uploaded']));
+$note = $area === 'admin'
+    ? 'กรอกข้อมูลงานวิจัยและอัปโหลดเอกสารแยกเป็นบท (ไฟล์ PDF) เลือกได้ว่าบทใดเปิดเผยสู่สาธารณะ'
+    : 'กรอกข้อมูลงานวิจัยของคุณและอัปโหลดเอกสารแยกเป็นบท เลือก “รอตรวจสอบ” เพื่อส่งให้ผู้ดูแลอนุมัติเผยแพร่';
 ?>
 <div style="animation:fade .25s;max-width:960px">
-  <p style="margin:0 0 18px;color:var(--muted);font-size:13.5px">กรอกข้อมูลงานวิจัยและอัปโหลดเอกสารแยกเป็นบท (ไฟล์ PDF) เลือกได้ว่าบทใดเปิดเผยสู่สาธารณะ</p>
+  <p style="margin:0 0 18px;color:var(--muted);font-size:13.5px"><?= h($note) ?></p>
   <form method="post" action="<?= h($action) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
     <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
@@ -87,12 +94,15 @@ $uploaded = count(array_filter($files, fn ($f) => $f['uploaded']));
       <!-- right: status + files + submit -->
       <div style="display:flex;flex-direction:column;gap:18px;position:sticky;top:80px">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
-          <div style="font-weight:600;font-size:15px;margin-bottom:4px">สถานะการเผยแพร่</div>
+          <div style="font-weight:600;font-size:15px;margin-bottom:4px">สถานะ</div>
           <select name="status" style="<?= $inputStyle ?>;margin-top:8px">
-            <?php foreach (App::STATUSES as $s): ?>
+            <?php foreach ($statuses as $s): ?>
               <option <?= (string) ($val('status', 'แบบร่าง')) === $s ? 'selected' : '' ?>><?= h($s) ?></option>
             <?php endforeach; ?>
           </select>
+          <?php if ($area !== 'admin'): ?>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">“แบบร่าง” บันทึกไว้แก้ไขต่อได้ · “รอตรวจสอบ” ส่งให้ผู้ดูแลอนุมัติเผยแพร่</div>
+          <?php endif; ?>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-weight:600;font-size:15px">เอกสารแยกบท</div><span style="font-size:12px;font-weight:600;color:var(--primary-text)"><?= $uploaded ?>/<?= count($chapters) ?></span></div>
@@ -118,8 +128,8 @@ $uploaded = count(array_filter($files, fn ($f) => $f['uploaded']));
           </div>
         </div>
         <div style="display:flex;gap:10px">
-          <button type="submit" style="flex:1;background:var(--primary);color:#fff;border:none;border-radius:11px;padding:13px;font-weight:600;font-size:14.5px;cursor:pointer;box-shadow:var(--shadow)"><?= $e ? 'บันทึกการแก้ไข' : 'บันทึกงานวิจัย' ?></button>
-          <a href="<?= h(url('admin/research')) ?>" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:11px;padding:13px 18px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;display:grid;place-items:center">ยกเลิก</a>
+          <button type="submit" style="flex:1;background:var(--primary);color:#fff;border:none;border-radius:11px;padding:13px;font-weight:600;font-size:14.5px;cursor:pointer;box-shadow:var(--shadow)"><?= $e ? 'บันทึกการแก้ไข' : ($area === 'admin' ? 'บันทึกงานวิจัย' : 'ส่งงานวิจัย') ?></button>
+          <a href="<?= h($cancelUrl) ?>" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:11px;padding:13px 18px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;display:grid;place-items:center">ยกเลิก</a>
         </div>
       </div>
     </div>

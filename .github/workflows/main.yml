@@ -20,3 +20,6 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             # composer install --no-dev --optimize-autoloader (ถ้ามี)
+            # ปรับปรุงโครงสร้างฐานข้อมูลอัตโนมัติ (idempotent — รันซ้ำได้ปลอดภัย)
+            # ต้องมี config/config.php บนเซิร์ฟเวอร์ก่อน (สร้างครั้งแรกด้วย install.php)
+            php migrate.php

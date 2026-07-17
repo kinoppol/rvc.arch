@@ -109,8 +109,9 @@ $flashes    = take_flash();
   overlay.addEventListener('click', closeModal);
   btnConfirm.addEventListener('click', function () {
     if (pendingForm) {
+      var form = pendingForm;
       closeModal();
-      pendingForm.submit();
+      form.submit();
     }
   });
   document.addEventListener('keydown', function (e) {

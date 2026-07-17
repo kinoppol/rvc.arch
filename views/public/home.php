@@ -7,9 +7,13 @@
     <div style="display:inline-block;font-size:12.5px;font-weight:500;letter-spacing:.04em;background:rgba(255,255,255,.14);padding:6px 14px;border-radius:999px;margin-bottom:20px">คลังปัญญา · เผยแพร่ · ต่อยอด</div>
     <h1 style="font-size:40px;line-height:1.2;font-weight:700;margin:0 0 14px;text-wrap:balance">ระบบคลังงานวิจัยและโครงงาน</h1>
     <p style="font-size:17px;opacity:.9;margin:0 auto 30px;max-width:600px;text-wrap:pretty">รวบรวมงานวิจัยของครู โครงงานนักเรียนนักศึกษา สิ่งประดิษฐ์ และโครงงานวิทยาศาสตร์ ของวิทยาลัยอาชีวศึกษาร้อยเอ็ด</p>
-    <form method="get" action="<?= h(url('search')) ?>" style="display:flex;background:var(--surface);border-radius:14px;padding:7px;box-shadow:var(--shadow-lg);max-width:620px;margin:0 auto;gap:6px">
-      <input name="q" placeholder="ค้นหาชื่อเรื่อง ผู้จัดทำ หรือคำสำคัญ…" style="flex:1;border:none;background:transparent;color:var(--text);font-size:15px;padding:12px 14px;outline:none"/>
-      <button type="submit" style="background:var(--primary);color:var(--primary-fg);border:none;border-radius:9px;padding:0 24px;font-weight:600;font-size:14.5px;cursor:pointer">ค้นหา</button>
+    <form method="get" action="<?= h(url('search')) ?>" style="display:flex;align-items:center;background:var(--surface);border-radius:14px;padding:7px 7px 7px 16px;box-shadow:var(--shadow-lg);max-width:620px;margin:0 auto;gap:6px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input name="q" placeholder="ค้นหาชื่อเรื่อง ผู้จัดทำ หรือคำสำคัญ…" style="flex:1;border:none;background:transparent;color:var(--text);font-size:15px;padding:10px 8px;outline:none"/>
+      <button type="submit" style="display:flex;align-items:center;gap:7px;background:var(--primary);color:var(--primary-fg);border:none;border-radius:9px;padding:0 22px;height:44px;font-weight:600;font-size:14.5px;cursor:pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        ค้นหา
+      </button>
     </form>
     <div style="margin-top:16px;font-size:13px;opacity:.82;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       <span>ยอดนิยม:</span>

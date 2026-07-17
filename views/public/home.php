@@ -140,16 +140,42 @@
 
 <div style="width:100%;max-width:1600px;margin:0 auto;padding:0 clamp(24px,3vw,56px)">
   <!-- stats -->
+  <?php
+  /* Positional SVG icons for category cards (mirrors CAT_COLORS positional logic) */
+  $catIcons = [
+    /* 0 – งานวิจัยของครู */ '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    /* 1 – โครงงานนักศึกษา */ '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+    /* 2 – สิ่งประดิษฐ์ */ '<line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 018.91 14"/>',
+    /* 3 – วิทยาศาสตร์ */ '<path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v11m0 0H5a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2h-4m-6 0h6m-3-4v4"/>',
+    /* 4 – อื่น ๆ */ '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  ];
+  ?>
   <section style="margin-top:-42px;position:relative;z-index:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+    <!-- Total card -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)">
-      <div style="font-size:13px;color:var(--muted);font-weight:500">งานวิจัยทั้งหมด</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div style="font-size:13px;color:var(--muted);font-weight:500">งานวิจัยทั้งหมด</div>
+        <span style="width:32px;height:32px;border-radius:9px;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;flex:none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+        </span>
+      </div>
       <div style="font-size:34px;font-weight:700;margin-top:4px"><?= (int) $stats['total'] ?></div>
       <div style="font-size:12px;color:var(--muted)">เผยแพร่แล้ว</div>
     </div>
-    <?php foreach ($stats['cats'] as $c): ?>
+    <!-- Category cards -->
+    <?php foreach ($stats['cats'] as $i => $c): ?>
+      <?php $iconPath = $catIcons[$i % count($catIcons)]; ?>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)">
-        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:<?= h($c['color']) ?>"></span><div style="font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.3"><?= h($c['name']) ?></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div style="font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.35;padding-right:8px"><?= h($c['name']) ?></div>
+          <span style="width:32px;height:32px;border-radius:9px;background:color-mix(in srgb,<?= h($c['color']) ?> 14%,transparent);color:<?= h($c['color']) ?>;display:grid;place-items:center;flex:none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><?= $iconPath ?></svg>
+          </span>
+        </div>
         <div style="font-size:30px;font-weight:700;margin-top:6px"><?= (int) $c['count'] ?></div>
+        <div style="height:3px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden">
+          <div style="height:100%;width:<?= $stats['total'] > 0 ? round($c['count'] / $stats['total'] * 100) : 0 ?>%;background:<?= h($c['color']) ?>;border-radius:99px"></div>
+        </div>
       </div>
     <?php endforeach; ?>
   </section>

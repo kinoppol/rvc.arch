@@ -19,7 +19,7 @@
   </div>
 </section>
 
-<div style="max-width:1200px;margin:0 auto;padding:0 24px">
+<div style="width:100%;max-width:1600px;margin:0 auto;padding:0 clamp(24px,3vw,56px)">
   <!-- stats -->
   <section style="margin-top:-42px;position:relative;z-index:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)">

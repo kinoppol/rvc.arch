@@ -3,7 +3,7 @@
 $inputStyle = 'width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;background:var(--surface-2);color:var(--text);outline:none';
 $f = $filters;
 ?>
-<div style="max-width:1200px;margin:0 auto;padding:28px 24px 70px">
+<div style="width:100%;max-width:1600px;margin:0 auto;padding:28px clamp(24px,3vw,56px) 70px">
   <h1 style="font-size:26px;font-weight:700;margin:0 0 4px">สืบค้นงานวิจัยขั้นสูง</h1>
   <p style="color:var(--muted);margin:0 0 22px;font-size:14px">ค้นจากชื่อเรื่อง ผู้จัดทำ คำสำคัญ และบทคัดย่อ พร้อมตัวกรองและการเรียงลำดับ</p>
 
@@ -52,7 +52,7 @@ $f = $filters;
         <button type="submit" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:0 20px;font-weight:600;font-size:14px;cursor:pointer;box-shadow:var(--shadow)">ค้นหา</button>
       </div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px">พบ <b style="color:var(--text)"><?= count($results) ?></b> รายการ</div>
-      <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px">
         <?php foreach ($results as $r): ?>
           <a href="<?= h(url('research/' . $r['id'])) ?>" class="card-hover card-outline" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);text-decoration:none;color:inherit;display:flex;gap:16px;align-items:flex-start">
             <div style="width:46px;height:46px;border-radius:10px;background:color-mix(in srgb, <?= h($r['color']) ?> 14%, transparent);color:<?= h($r['color']) ?>;display:grid;place-items:center;font-weight:700;flex:none"><?= h($r['pubYearShort']) ?></div>
@@ -69,7 +69,7 @@ $f = $filters;
           </a>
         <?php endforeach; ?>
         <?php if (!$results): ?>
-          <div style="text-align:center;padding:50px 20px;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:14px">ไม่พบงานวิจัยที่ตรงกับเงื่อนไข ลองปรับคำค้นหรือตัวกรอง</div>
+          <div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:14px">ไม่พบงานวิจัยที่ตรงกับเงื่อนไข ลองปรับคำค้นหรือตัวกรอง</div>
         <?php endif; ?>
       </div>
     </div>

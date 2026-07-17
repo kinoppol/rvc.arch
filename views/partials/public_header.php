@@ -9,7 +9,7 @@ $navBtn = function (bool $active): string {
 $onSearch = in_array($publicView, ['search', 'detail'], true);
 ?>
 <header style="position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--surface) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
-  <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px">
+  <div style="max-width:1600px;margin:0 auto;padding:0 clamp(24px,3vw,56px);height:64px;display:flex;align-items:center;gap:20px">
     <a href="<?= h(url('')) ?>" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;margin-right:auto">
       <div style="width:38px;height:38px;border-radius:10px;background:var(--primary);color:var(--primary-fg);display:grid;place-items:center;font-weight:700;font-size:17px;box-shadow:var(--shadow)">RV</div>
       <div style="line-height:1.15">

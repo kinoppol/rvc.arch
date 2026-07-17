@@ -1,5 +1,12 @@
 <?php
-/** @var array $counts @var array $catBars @var array $yearBars @var array $pending */
+/** @var array $counts @var array $catBars @var array $yearBars @var array $pending @var array $disk */
+
+function fmt_bytes(int $bytes): string {
+    if ($bytes <= 0) return '0 B';
+    $u = ['B','KB','MB','GB','TB'];
+    $i = min(4, (int) floor(log($bytes, 1024)));
+    return round($bytes / pow(1024, $i), $i >= 2 ? 2 : 0) . ' ' . $u[$i];
+}
 
 /* ── Donut chart geometry ───────────────────────────────────── */
 $total  = max(1, (int) $counts['total']);
@@ -145,7 +152,71 @@ foreach ($stats as $i => [$label, $value, $color, $bg, $path]): ?>
   </div>
 </div>
 
-<!-- ③ Pending queue -->
+<!-- ③ Disk usage -->
+<?php
+$pct       = (float) $disk['pct'];
+$barColor  = $pct >= 90 ? '#ef4444' : ($pct >= 70 ? '#f59e0b' : '#22c55e');
+$barLabel  = $pct >= 90 ? 'วิกฤต' : ($pct >= 70 ? 'ควรระวัง' : 'ปกติ');
+$barBadgeBg = $pct >= 90 ? 'var(--danger-soft,#fee2e2)' : ($pct >= 70 ? 'var(--warn-soft,#fef3c7)' : 'var(--ok-soft,#dcfce7)');
+$barBadgeFg = $pct >= 90 ? 'var(--danger,#ef4444)' : ($pct >= 70 ? 'var(--warn,#f59e0b)' : 'var(--ok,#22c55e)');
+?>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow);margin-bottom:18px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span style="width:36px;height:36px;border-radius:10px;background:var(--info-soft,#e0f2fe);color:var(--info,#38bdf8);display:grid;place-items:center;flex:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </span>
+      <div>
+        <div style="font-weight:700;font-size:15px">พื้นที่จัดเก็บข้อมูล</div>
+        <div style="font-size:12px;color:var(--muted)">ดิสก์ที่ติดตั้งระบบ</div>
+      </div>
+    </div>
+    <span style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:<?= $barBadgeBg ?>;color:<?= $barBadgeFg ?>">
+      <?= $barLabel ?> — ใช้ไป <?= $pct ?>%
+    </span>
+  </div>
+
+  <!-- main progress bar -->
+  <div style="position:relative;height:14px;background:var(--surface-3);border-radius:99px;overflow:hidden;margin-bottom:10px">
+    <!-- used -->
+    <div style="position:absolute;left:0;top:0;bottom:0;width:<?= $pct ?>%;background:<?= $barColor ?>;border-radius:99px;transition:width .8s cubic-bezier(.16,1,.3,1)"></div>
+    <!-- upload portion (within used) -->
+    <?php if ($disk['uploadPct'] > 0): ?>
+    <div style="position:absolute;left:0;top:0;bottom:0;width:<?= $disk['uploadPct'] ?>%;background:rgba(108,71,255,.55);border-radius:99px;transition:width .8s .1s cubic-bezier(.16,1,.3,1)" title="ไฟล์อัปโหลด: <?= fmt_bytes($disk['uploadBytes']) ?>"></div>
+    <?php endif; ?>
+  </div>
+
+  <!-- legend -->
+  <div style="display:flex;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:20px">
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:<?= $barColor ?>;display:inline-block"></span>ใช้ไปแล้ว</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:rgba(108,71,255,.55);display:inline-block"></span>ไฟล์อัปโหลด</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:var(--surface-3);display:inline-block"></span>ว่าง</span>
+  </div>
+
+  <!-- stat boxes -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
+    <?php
+    $boxes = [
+      ['ความจุทั้งหมด',  fmt_bytes($disk['total']),       '#6c47ff', 'var(--primary-soft)',           'var(--primary-text)',    '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'],
+      ['ใช้ไปแล้ว',      fmt_bytes($disk['used']),        $barColor, $barBadgeBg,                    $barBadgeFg,             '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>'],
+      ['พื้นที่ว่าง',    fmt_bytes($disk['free']),        '#22c55e', 'var(--ok-soft,#dcfce7)',        'var(--ok,#22c55e)',     '<polyline points="20 6 9 17 4 12"/>'],
+      ['ไฟล์อัปโหลด',   fmt_bytes($disk['uploadBytes']), '#6c47ff', 'color-mix(in srgb,#6c47ff 14%,transparent)', '#6c47ff', '<path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>'],
+    ];
+    foreach ($boxes as [$label, $val, $color, $bg, $fg, $icoPath]): ?>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:28px;height:28px;border-radius:8px;background:<?= $bg ?>;color:<?= $fg ?>;display:grid;place-items:center;flex:none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><?= $icoPath ?></svg>
+        </span>
+        <div style="font-size:11.5px;color:var(--muted);font-weight:500"><?= $label ?></div>
+      </div>
+      <div style="font-size:20px;font-weight:700;color:var(--text)"><?= $val ?></div>
+    </div>
+    <?php endforeach; ?>
+  </div>
+</div>
+
+<!-- ④ Pending queue -->
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden">
   <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
     <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:9px">

@@ -42,11 +42,30 @@ final class AdminController
             'pct'   => round($y['count'] / $maxYear * 100) . '%',
         ], $yearCounts);
 
+        $uploadPath  = App::basePath() . '/storage/uploads';
+        $diskTotal   = @disk_total_space($uploadPath) ?: @disk_total_space(__DIR__) ?: 0;
+        $diskFree    = @disk_free_space($uploadPath)  ?: @disk_free_space(__DIR__)  ?: 0;
+        $diskUsed    = $diskTotal - $diskFree;
+        $uploadBytes = 0;
+        if (is_dir($uploadPath)) {
+            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($uploadPath, FilesystemIterator::SKIP_DOTS)) as $file) {
+                $uploadBytes += $file->getSize();
+            }
+        }
+
         App::render('admin/dashboard', [
-            'counts'   => $counts,
-            'catBars'  => $catBars,
-            'yearBars' => $yearBars,
-            'pending'  => $this->repo->pending(),
+            'counts'      => $counts,
+            'catBars'     => $catBars,
+            'yearBars'    => $yearBars,
+            'pending'     => $this->repo->pending(),
+            'disk'        => [
+                'total'       => $diskTotal,
+                'used'        => $diskUsed,
+                'free'        => $diskFree,
+                'uploadBytes' => $uploadBytes,
+                'pct'         => $diskTotal > 0 ? round($diskUsed / $diskTotal * 100, 1) : 0,
+                'uploadPct'   => $diskTotal > 0 ? round($uploadBytes / $diskTotal * 100, 2) : 0,
+            ],
         ], $this->layoutVars('dashboard', 'แดชบอร์ด'));
     }
 

@@ -1,8 +1,9 @@
 <?php
 /** @var array $stats @var array $latest */
 ?>
-<section style="background:linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, #1c1030) 100%);color:#fff;padding:66px 24px 80px">
-  <div style="max-width:840px;margin:0 auto;text-align:center">
+<section id="hero" style="position:relative;overflow:hidden;background:linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, #1c1030) 100%);color:#fff;padding:66px 24px 80px">
+  <canvas id="starfield" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.65" aria-hidden="true"></canvas>
+  <div style="position:relative;z-index:1;max-width:840px;margin:0 auto;text-align:center">
     <div style="display:inline-block;font-size:12.5px;font-weight:500;letter-spacing:.04em;background:rgba(255,255,255,.14);padding:6px 14px;border-radius:999px;margin-bottom:20px">คลังปัญญา · เผยแพร่ · ต่อยอด</div>
     <h1 style="font-size:40px;line-height:1.2;font-weight:700;margin:0 0 14px;text-wrap:balance">ระบบคลังงานวิจัยและโครงงาน</h1>
     <p style="font-size:17px;opacity:.9;margin:0 auto 30px;max-width:600px;text-wrap:pretty">รวบรวมงานวิจัยของครู โครงงานนักเรียนนักศึกษา สิ่งประดิษฐ์ และโครงงานวิทยาศาสตร์ ของวิทยาลัยอาชีวศึกษาร้อยเอ็ด</p>
@@ -18,6 +19,120 @@
     </div>
   </div>
 </section>
+<script>
+(function () {
+  var canvas = document.getElementById('starfield');
+  var hero   = document.getElementById('hero');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+
+  var W, H, pts, mouse = { x: -9999, y: -9999 };
+
+  /* ── config ─────────────────────────────── */
+  var N_PTS      = 90;   // number of particles
+  var MAX_DIST   = 140;  // max line distance
+  var MOUSE_R    = 180;  // mouse influence radius
+  var MOUSE_PULL = 0.04; // how strongly mouse attracts
+  var SPEED      = 0.4;
+
+  function resize() {
+    W = canvas.width  = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+
+  function randBetween(a, b) { return a + Math.random() * (b - a); }
+
+  function initPts() {
+    pts = [];
+    for (var i = 0; i < N_PTS; i++) {
+      pts.push({
+        x: randBetween(0, W),
+        y: randBetween(0, H),
+        vx: randBetween(-SPEED, SPEED),
+        vy: randBetween(-SPEED, SPEED),
+        r: randBetween(1.2, 2.8),
+        alpha: randBetween(0.4, 1),
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    /* move */
+    pts.forEach(function (p) {
+      /* gentle mouse pull */
+      var dx = mouse.x - p.x, dy = mouse.y - p.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < MOUSE_R && dist > 0) {
+        var f = (1 - dist / MOUSE_R) * MOUSE_PULL;
+        p.vx += dx / dist * f;
+        p.vy += dy / dist * f;
+      }
+
+      /* speed cap */
+      var spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (spd > SPEED * 2.5) { p.vx *= 0.92; p.vy *= 0.92; }
+
+      p.x += p.vx;  p.y += p.vy;
+
+      /* wrap */
+      if (p.x < -20) p.x = W + 20;
+      if (p.x > W + 20) p.x = -20;
+      if (p.y < -20) p.y = H + 20;
+      if (p.y > H + 20) p.y = -20;
+    });
+
+    /* lines */
+    for (var i = 0; i < pts.length; i++) {
+      for (var j = i + 1; j < pts.length; j++) {
+        var dx = pts[i].x - pts[j].x;
+        var dy = pts[i].y - pts[j].y;
+        var d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < MAX_DIST) {
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.strokeStyle = 'rgba(255,255,255,' + ((1 - d / MAX_DIST) * 0.25) + ')';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    /* dots */
+    pts.forEach(function (p) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,' + p.alpha + ')';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  /* track mouse relative to hero */
+  document.addEventListener('mousemove', function (e) {
+    var rect = hero.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+  hero.addEventListener('mouseleave', function () {
+    mouse.x = -9999; mouse.y = -9999;
+  });
+
+  /* touch support */
+  hero.addEventListener('touchmove', function (e) {
+    var rect = hero.getBoundingClientRect();
+    var t = e.touches[0];
+    mouse.x = t.clientX - rect.left;
+    mouse.y = t.clientY - rect.top;
+  }, { passive: true });
+
+  window.addEventListener('resize', function () { resize(); initPts(); });
+  resize(); initPts(); draw();
+})();
+</script>
 
 <div style="width:100%;max-width:1600px;margin:0 auto;padding:0 clamp(24px,3vw,56px)">
   <!-- stats -->
